@@ -1,0 +1,40 @@
+{
+	"name": "job-assistant",
+	"private": true,
+	"version": "0.1.0",
+	"description": "A local-first assistant for finding, ranking, and preparing job applications.",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"scripts": {
+		"dev": "vite dev --host 127.0.0.1",
+		"build": "vite build",
+		"start": "node --env-file-if-exists=.env.local scripts/start-local.mjs",
+		"preview": "vite preview --host 127.0.0.1",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"test": "vitest run",
+		"ci": "npm run check && npm test && npm run build"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-vercel": "^6.3.4",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@types/better-sqlite3": "^9.6.0",
+		"@types/node": "^22",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16",
+		"vitest": "^4.1.8"
+	},
+	"dependencies": {
+		"better-sqlite3": "^13.0.3",
+		"zod": "^4.4.3"
+	},
+	"overrides": {
+		"cookie": "0.7.2"
+	}
+}

@@ -1,0 +1,49 @@
+node_modules
+
+# Build output
+/.svelte-kit
+/build
+/coverage
+/.vercel
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Private runtime data belongs outside the checkout
+/data
+/runtime
+/exports
+/applications
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.log
+*.har
+*.trace.zip
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Candidate and browser material
+**/resume.*
+**/cv.*
+candidate-profile.json
+profile.json
+application-packet.json
+cover-letter.txt
+browser-profile/
+browser-data/
+playwright/.auth/
+storage-state*.json
+
+# Editors and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
