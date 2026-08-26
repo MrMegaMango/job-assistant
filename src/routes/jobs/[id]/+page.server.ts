@@ -9,6 +9,7 @@ import {
 } from '$lib/server/applications';
 import { softwareDeveloperBenchmark } from '$lib/server/salary';
 import { getApplicationForJob, getJob } from '$lib/server/store';
+import { ensureHostedJobs } from '$lib/server/sync';
 
 function jobId(params: { id: string }): number {
 	const id = Number(params.id);
@@ -16,9 +17,13 @@ function jobId(params: { id: string }): number {
 	return id;
 }
 
-export const load: PageServerLoad = ({ params, url }) => {
+export const load: PageServerLoad = async ({ params, url }) => {
 	const id = jobId(params);
-	const job = getJob(id);
+	let job = getJob(id);
+	if (!job && isHostedDemo()) {
+		await ensureHostedJobs();
+		job = getJob(id);
+	}
 	if (!job) throw error(404, 'Job not found.');
 	return {
 		job,

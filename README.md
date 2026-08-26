@@ -44,7 +44,7 @@ Set `JOB_ASSISTANT_DATA_DIR` in `.env.local` only if you need a custom location.
 
 ## Vercel demo mode
 
-Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. The hosted profile contains professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances. This makes the hosted site safe as a public product demo, not a durable personal assistant.
+Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. The hosted profile contains professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances; cold briefing and job-detail requests refresh their temporary job data when needed. This makes the hosted site safe as a public product demo, not a durable personal assistant.
 
 The production build constrains Vercel's dependency trace to the repository and then audits the generated bundle. The build fails and removes its output if it finds an external home-directory path, local database, credential file, resume, or application packet.
 

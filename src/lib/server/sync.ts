@@ -1,7 +1,7 @@
 import type { JobSource } from '$lib/types';
 import { fetchSource } from './connectors';
 import { isHostedDemo } from './deployment';
-import { listSources, recordSourceFailure, upsertSourceJobs } from './store';
+import { getStats, listSources, recordSourceFailure, upsertSourceJobs } from './store';
 
 export interface SyncResult {
 	source: string;
@@ -56,4 +56,8 @@ export async function syncEnabledSources(): Promise<SyncResult[]> {
 	} finally {
 		hostedSyncInFlight = null;
 	}
+}
+
+export async function ensureHostedJobs(): Promise<void> {
+	if (isHostedDemo() && getStats().activeJobs === 0) await syncEnabledSources();
 }
