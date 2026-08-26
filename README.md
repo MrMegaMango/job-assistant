@@ -2,6 +2,8 @@
 
 A private, local-first dashboard that finds jobs from public employer ATS feeds, ranks them against your preferences, explains the match, surfaces compensation evidence, and prepares a review-gated application handoff.
 
+[Try the live demo](https://job-assistant-lilac.vercel.app)
+
 The public Vercel deployment is a disposable discovery demo. It never accepts profile, resume, or application-tracking data; clone and run the project locally for the private, durable workflow.
 
 ## What works in the MVP

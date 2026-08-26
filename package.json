@@ -3,6 +3,11 @@
 	"private": true,
 	"version": "0.1.0",
 	"description": "A local-first assistant for finding, ranking, and preparing job applications.",
+	"homepage": "https://job-assistant-lilac.vercel.app",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/MrMegaMango/job-assistant.git"
+	},
 	"license": "MIT",
 	"type": "module",
 	"engines": {
