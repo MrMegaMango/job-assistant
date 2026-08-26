@@ -3,11 +3,11 @@
 .env
 .env.*
 node_modules
-coverage
-data
-runtime
-exports
-applications
+/coverage
+/data
+/runtime
+/exports
+/applications
 *.db
 *.db-*
 *.sqlite
