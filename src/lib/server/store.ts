@@ -11,6 +11,8 @@ import type {
 	StoredJob
 } from '$lib/types';
 import { getDb } from './database';
+import { isHostedDemo } from './deployment';
+import { toHostedDemoProfile } from './profile';
 import { scoreJob } from './scoring';
 
 type ProfileRow = {
@@ -21,6 +23,7 @@ type ProfileRow = {
 	resume_path: string;
 	target_titles_json: string;
 	skills_json: string;
+	focus_areas_json: string;
 	preferred_locations_json: string;
 	remote_preference: CandidateProfile['remotePreference'];
 	min_base_salary: number | null;
@@ -96,6 +99,7 @@ function profileFromRow(row: ProfileRow): CandidateProfile {
 		resumePath: row.resume_path,
 		targetTitles: parseJson<string[]>(row.target_titles_json),
 		skills: parseJson<string[]>(row.skills_json),
+		focusAreas: parseJson<string[]>(row.focus_areas_json),
 		preferredLocations: parseJson<string[]>(row.preferred_locations_json),
 		remotePreference: row.remote_preference,
 		minBaseSalary: row.min_base_salary,
@@ -174,7 +178,8 @@ function applicationFromRow(row: ApplicationRow): ApplicationRecord {
 
 export function getProfile(): CandidateProfile {
 	const row = getDb().prepare('SELECT * FROM profiles WHERE id = 1').get() as ProfileRow;
-	return profileFromRow(row);
+	const profile = profileFromRow(row);
+	return isHostedDemo() ? toHostedDemoProfile(profile) : profile;
 }
 
 export function saveProfile(profile: Omit<CandidateProfile, 'id' | 'updatedAt'>): CandidateProfile {
@@ -183,7 +188,7 @@ export function saveProfile(profile: Omit<CandidateProfile, 'id' | 'updatedAt'>)
 		.prepare(`
 			UPDATE profiles SET
 				name = ?, email = ?, phone = ?, resume_path = ?, target_titles_json = ?,
-				skills_json = ?, preferred_locations_json = ?, remote_preference = ?,
+				skills_json = ?, focus_areas_json = ?, preferred_locations_json = ?, remote_preference = ?,
 				min_base_salary = ?, excluded_keywords_json = ?, updated_at = ?
 			WHERE id = 1
 		`)
@@ -194,13 +199,18 @@ export function saveProfile(profile: Omit<CandidateProfile, 'id' | 'updatedAt'>)
 			profile.resumePath.trim(),
 			JSON.stringify(profile.targetTitles),
 			JSON.stringify(profile.skills),
+			JSON.stringify(profile.focusAreas),
 			JSON.stringify(profile.preferredLocations),
 			profile.remotePreference,
 			profile.minBaseSalary,
 			JSON.stringify(profile.excludedKeywords),
 			now
 		);
-	audit('profile.updated', 'profile', 1, { targetTitleCount: profile.targetTitles.length, skillCount: profile.skills.length });
+	audit('profile.updated', 'profile', 1, {
+		targetTitleCount: profile.targetTitles.length,
+		skillCount: profile.skills.length,
+		focusAreaCount: profile.focusAreas.length
+	});
 	return getProfile();
 }
 
@@ -341,7 +351,7 @@ export function listRankedJobs(options: {
 		const job = jobFromRow(row);
 		const match = scoreJob(profile, job);
 		cacheMatch(job, profile, match);
-		return { ...job, match, applicationState: row.application_state ?? null };
+		return { ...job, match, applicationState: isHostedDemo() ? null : (row.application_state ?? null) };
 	});
 	return ranked
 		.filter((job) => (options.includeRejected ? true : !job.match.hardRejected))
@@ -357,10 +367,11 @@ export function getJob(id: number): RankedJob | null {
 	const job = jobFromRow(row);
 	const match = scoreJob(profile, job);
 	cacheMatch(job, profile, match);
-	return { ...job, match, applicationState: row.application_state ?? null };
+	return { ...job, match, applicationState: isHostedDemo() ? null : (row.application_state ?? null) };
 }
 
 export function getApplicationForJob(jobId: number): ApplicationRecord | null {
+	if (isHostedDemo()) return null;
 	const row = getDb().prepare('SELECT * FROM applications WHERE job_id = ?').get(jobId) as
 		| ApplicationRow
 		| undefined;
@@ -368,6 +379,7 @@ export function getApplicationForJob(jobId: number): ApplicationRecord | null {
 }
 
 export function listApplications(): Array<ApplicationRecord & { job: StoredJob }> {
+	if (isHostedDemo()) return [];
 	const rows = getDb()
 		.prepare(`${JOB_SELECT} WHERE a.id IS NOT NULL ORDER BY a.updated_at DESC`)
 		.all() as JobRow[];

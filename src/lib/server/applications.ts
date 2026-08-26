@@ -1,6 +1,6 @@
-import { existsSync } from 'node:fs';
 import type { ApplicationPacket, ApplicationRecord } from '$lib/types';
 import { getDb } from './database';
+import { runtimeFileExists } from './runtime-files';
 import {
 	audit,
 	getApplicationForJob,
@@ -40,13 +40,13 @@ export function prepareApplication(jobId: number): ApplicationRecord {
 	if (!profile.email) checklist.push('Add the email you want employers to use.');
 	if (!profile.phone) checklist.push('Add a phone number for applications.');
 	if (!profile.resumePath) checklist.push('Choose a resume file in Setup.');
-	else if (!existsSync(profile.resumePath)) checklist.push('The configured resume file does not exist.');
+	else if (!runtimeFileExists(profile.resumePath)) checklist.push('The configured resume file does not exist.');
 	checklist.push('Review every generated statement against your resume.');
 	checklist.push('Answer work authorization, salary expectations, legal attestations, and demographic questions yourself.');
 	checklist.push('Confirm the employer domain and final form before submitting.');
 
 	const contactReady = Boolean(
-		profile.name && profile.email && profile.phone && profile.resumePath && existsSync(profile.resumePath)
+		profile.name && profile.email && profile.phone && profile.resumePath && runtimeFileExists(profile.resumePath)
 	);
 	const verifiedStrengths = job.match.strengths.filter((strength) => !strength.includes('compensation'));
 	const skillSummary = job.match.matchedSkills.slice(0, 6).join(', ');

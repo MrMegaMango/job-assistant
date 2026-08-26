@@ -10,6 +10,7 @@ export interface CandidateProfile {
 	resumePath: string;
 	targetTitles: string[];
 	skills: string[];
+	focusAreas: string[];
 	preferredLocations: string[];
 	remotePreference: RemotePreference;
 	minBaseSalary: number | null;
@@ -79,6 +80,7 @@ export interface MatchResult {
 	hardRejected: boolean;
 	components: MatchComponents;
 	matchedSkills: string[];
+	matchedFocusAreas: string[];
 	strengths: string[];
 	gaps: string[];
 	unknowns: string[];

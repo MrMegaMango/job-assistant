@@ -1,5 +1,13 @@
 <script lang="ts">
 	let { data, form } = $props();
+	const componentMaximums: Record<string, number> = {
+		title: 25,
+		skills: 30,
+		domain: 15,
+		seniority: 15,
+		location: 10,
+		compensation: 5
+	};
 
 	function money(min: number, max: number, currency: string): string {
 		const formatter = new Intl.NumberFormat('en-US', {
@@ -11,7 +19,7 @@
 	}
 </script>
 
-<svelte:head><title>{data.job.title} at {data.job.company} · Job Assistant</title></svelte:head>
+<svelte:head><title>{data.job.title} at {data.job.company} · High Match</title></svelte:head>
 
 <section class="hero">
 	<div>
@@ -43,7 +51,7 @@
 			</div>
 			<div class="component-grid">
 				{#each Object.entries(data.job.match.components) as [name, value]}
-					<div class="component"><strong>{value}</strong><span>{name}</span></div>
+					<div class="component"><strong>{value}/{componentMaximums[name]}</strong><span>{name}</span></div>
 				{/each}
 			</div>
 			<div class="form-grid" style="margin-top: 1rem">

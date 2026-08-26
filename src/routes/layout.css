@@ -376,6 +376,12 @@ h2 {
 	color: var(--red);
 }
 
+.tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem;
+}
+
 .salary {
 	margin: 0.8rem 0 0;
 	color: var(--green);

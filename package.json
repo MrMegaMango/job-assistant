@@ -1,8 +1,8 @@
 {
-	"name": "job-assistant",
+	"name": "high-match-job-assistant",
 	"private": true,
 	"version": "0.1.0",
-	"description": "A local-first assistant for finding, ranking, and preparing job applications.",
+	"description": "A local-first assistant for finding, ranking, and preparing high-match job applications.",
 	"homepage": "https://high-match-job-assistant.vercel.app",
 	"repository": {
 		"type": "git",
@@ -15,16 +15,16 @@
 	},
 	"scripts": {
 		"dev": "vite dev --host 127.0.0.1",
-		"build": "vite build",
-		"start": "node --env-file-if-exists=.env.local scripts/start-local.mjs",
+		"build": "node scripts/harden-vercel-adapter.mjs && vite build && node scripts/audit-vercel-output.mjs",
+		"start": "vite preview --host 127.0.0.1 --port 4173",
 		"preview": "vite preview --host 127.0.0.1",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "node scripts/harden-vercel-adapter.mjs && svelte-kit sync",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"test": "vitest run",
 		"ci": "npm run check && npm test && npm run build"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-vercel": "^6.3.4",
+		"@sveltejs/adapter-vercel": "6.3.4",
 		"@sveltejs/kit": "^2.63.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@types/better-sqlite3": "^9.6.0",

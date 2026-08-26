@@ -5,11 +5,11 @@ import { listRankedJobs } from '$lib/server/store';
 
 export const GET: RequestHandler = ({ url }) => {
 	const requestedLimit = Number(url.searchParams.get('limit') ?? 10);
-	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 55);
+	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 65);
 	const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(50, requestedLimit)) : 10;
 	const minimumScore = Number.isFinite(requestedMinimum)
 		? Math.max(0, Math.min(95, requestedMinimum))
-		: 55;
+		: 65;
 	const jobs = listRankedJobs({ limit, minimumScore }).map((job) => ({
 		id: job.id,
 		company: job.company,

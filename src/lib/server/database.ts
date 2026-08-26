@@ -46,6 +46,66 @@ const DEFAULT_SOURCES: Array<{
 		name: 'Perplexity',
 		boardToken: 'perplexity',
 		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Fireworks AI',
+		boardToken: 'fireworks',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Anyscale',
+		boardToken: 'anyscale',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Lambda',
+		boardToken: 'lambda',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Prime Intellect',
+		boardToken: 'primeintellect',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'greenhouse',
+		name: 'CoreWeave',
+		boardToken: 'coreweave',
+		policyUrl: 'https://developer.greenhouse.io/job-board.html'
+	},
+	{
+		provider: 'ashby',
+		name: 'OpenAI',
+		boardToken: 'openai',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Cursor',
+		boardToken: 'cursor',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Runway',
+		boardToken: 'runway-ml',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'E2B',
+		boardToken: 'e2b',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
+	},
+	{
+		provider: 'ashby',
+		name: 'Pika',
+		boardToken: 'pika',
+		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
 	}
 ];
 
@@ -59,6 +119,7 @@ function migrate(db: Database.Database): void {
 			resume_path TEXT NOT NULL DEFAULT '',
 			target_titles_json TEXT NOT NULL,
 			skills_json TEXT NOT NULL,
+			focus_areas_json TEXT NOT NULL DEFAULT '[]',
 			preferred_locations_json TEXT NOT NULL,
 			remote_preference TEXT NOT NULL CHECK (remote_preference IN ('remote', 'hybrid', 'any')),
 			min_base_salary INTEGER,
@@ -158,15 +219,24 @@ function migrate(db: Database.Database): void {
 		);
 	`);
 
+	const profileColumns = db.prepare('PRAGMA table_info(profiles)').all() as Array<{ name: string }>;
+	if (!profileColumns.some((column) => column.name === 'focus_areas_json')) {
+		db.exec("ALTER TABLE profiles ADD COLUMN focus_areas_json TEXT NOT NULL DEFAULT '[]'");
+	}
+	db.prepare("UPDATE profiles SET focus_areas_json = ? WHERE focus_areas_json = '[]'").run(
+		JSON.stringify(['Backend infrastructure', 'Platform engineering', 'Distributed systems'])
+	);
+
 	const now = new Date().toISOString();
 	db.prepare(`
 		INSERT OR IGNORE INTO profiles (
-			id, target_titles_json, skills_json, preferred_locations_json,
+			id, target_titles_json, skills_json, focus_areas_json, preferred_locations_json,
 			remote_preference, min_base_salary, excluded_keywords_json, updated_at
-		) VALUES (1, ?, ?, ?, 'any', NULL, ?, ?)
+		) VALUES (1, ?, ?, ?, ?, 'any', NULL, ?, ?)
 	`).run(
 		JSON.stringify(['Software Engineer', 'Machine Learning Engineer', 'Platform Engineer']),
 		JSON.stringify(['Python', 'TypeScript', 'SQL']),
+		JSON.stringify(['Backend infrastructure', 'Machine learning', 'Platform engineering']),
 		JSON.stringify(['Remote']),
 		JSON.stringify([]),
 		now

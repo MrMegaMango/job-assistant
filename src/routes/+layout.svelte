@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>Job Assistant</title>
+	<title>High Match Job Assistant</title>
 	<meta
 		name="description"
 		content="Private, explainable job discovery and application preparation."
@@ -13,11 +13,11 @@
 </svelte:head>
 
 <header class="site-header">
-	<a class="brand" href="/" aria-label="Job Assistant home">
-		<span class="brand-mark">JA</span>
+	<a class="brand" href="/" aria-label="High Match Job Assistant home">
+		<span class="brand-mark">HM</span>
 		<span>
-			<strong>Job Assistant</strong>
-			<small>private career search</small>
+			<strong>High Match</strong>
+			<small>private job assistant</small>
 		</span>
 	</a>
 	<nav aria-label="Primary navigation">
@@ -30,8 +30,8 @@
 
 {#if data.hostedDemo}
 	<div class="demo-banner">
-		<strong>Disposable hosted demo.</strong> Job data may reset between requests. Profile editing and
-		application tracking are disabled; clone the project to use those privately and durably.
+		<strong>Tailored public demo.</strong> Matches use a verified Staff AI/backend infrastructure profile.
+		Job data may reset; identity, resume, and application tracking stay local-only.
 	</div>
 {/if}
 

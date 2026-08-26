@@ -6,10 +6,10 @@ import { listRankedJobs, getProfile } from '$lib/server/store';
 import { syncEnabledSources } from '$lib/server/sync';
 
 export const load: PageServerLoad = ({ url }) => {
-	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 35);
+	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 60);
 	const minimumScore = Number.isFinite(requestedMinimum)
 		? Math.min(95, Math.max(0, requestedMinimum))
-		: 35;
+		: 60;
 	const jobs = listRankedJobs({ minimumScore, limit: 120 }).map(({ description, ...job }) => ({
 		...job,
 		excerpt: description.slice(0, 420)

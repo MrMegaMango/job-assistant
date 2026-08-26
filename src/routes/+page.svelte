@@ -25,7 +25,13 @@
 	</form>
 </section>
 
-{#if !data.profileComplete}
+{#if data.hostedDemo}
+	<div class="notice good">
+		<strong>Tailored matching is active.</strong> Rankings prioritize staff-level AI infrastructure,
+		backend/platform systems, model serving, retrieval and evaluation, performance, and cloud security.
+		<a href="/setup">See the verified criteria</a>.
+	</div>
+{:else if !data.profileComplete}
 	<div class="notice">
 		Your matching preferences are ready, but application contact details and resume path still need
 		confirmation. <a href="/setup">Finish setup</a> before preparing an application.

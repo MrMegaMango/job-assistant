@@ -10,7 +10,7 @@ export const GET: RequestHandler = () => {
 	return json({
 		status: 'ok',
 		mode: isHostedDemo() ? 'disposable-hosted-demo' : 'local',
-		profileConfigured: Boolean(profile.targetTitles.length && profile.skills.length),
+		profileConfigured: Boolean(profile.targetTitles.length && profile.skills.length && profile.focusAreas.length),
 		contactReady: Boolean(profile.name && profile.email && profile.phone && profile.resumePath),
 		enabledSources: sources.filter((source) => source.enabled).length,
 		activeJobs: stats.activeJobs,

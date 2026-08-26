@@ -72,6 +72,7 @@ describe('application safety state machine', () => {
 			resumePath,
 			targetTitles: current.targetTitles,
 			skills: current.skills,
+			focusAreas: current.focusAreas,
 			preferredLocations: current.preferredLocations,
 			remotePreference: current.remotePreference,
 			minBaseSalary: current.minBaseSalary,

@@ -1,15 +1,15 @@
-# Job Assistant
+# High Match Job Assistant
 
-A private, local-first dashboard that finds jobs from public employer ATS feeds, ranks them against your preferences, explains the match, surfaces compensation evidence, and prepares a review-gated application handoff.
+A private, local-first dashboard that finds jobs from public employer ATS feeds, ranks them against your verified experience, explains the match, surfaces compensation evidence, and prepares a review-gated application handoff.
 
 [Try the live demo](https://high-match-job-assistant.vercel.app)
 
-The public Vercel deployment is a disposable discovery demo. It never accepts profile, resume, or application-tracking data; clone and run the project locally for the private, durable workflow.
+The public Vercel deployment is tailored to a staff-level AI and backend infrastructure profile using public, non-identifying professional criteria. It never accepts identity, resume, or application-tracking data; clone and run the project locally for the private, durable workflow.
 
 ## What works in the MVP
 
 - Sync public Greenhouse, Ashby, and Lever company boards without scraping or login credentials.
-- Rank jobs with explainable title, skill, seniority, location, and compensation components.
+- Rank jobs with explainable title, verified-skill, domain-focus, seniority, location, and compensation components.
 - Show employer-posted salary ranges when provided and clearly label a broad BLS benchmark when pay is missing.
 - Shortlist or dismiss jobs and generate an application review packet from verified profile facts.
 - Record explicit approval, then open the canonical employer application form for your final review and submission.
@@ -26,9 +26,9 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`, review the profile under **Setup**, then choose **Sync jobs**. The default sources are relevant AI infrastructure employers using public ATS feeds; they can be enabled or disabled under **Sources**.
+Open `http://127.0.0.1:5173`, review the profile under **Setup**, then choose **Sync jobs**. Sixteen validated public boards are enabled by default, including Anthropic, OpenAI, Fireworks AI, Anyscale, Lambda, CoreWeave, Modal, Baseten, and other AI-infrastructure employers. They can be enabled or disabled under **Sources**.
 
-Production-style local run:
+Preview the production build locally:
 
 ```sh
 npm run build
@@ -44,7 +44,9 @@ Set `JOB_ASSISTANT_DATA_DIR` in `.env.local` only if you need a custom location.
 
 ## Vercel demo mode
 
-Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. Synced jobs can reset between requests or function instances. This makes the hosted site safe as a public product demo, not a durable personal assistant.
+Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. The hosted profile contains professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances. This makes the hosted site safe as a public product demo, not a durable personal assistant.
+
+The production build constrains Vercel's dependency trace to the repository and then audits the generated bundle. The build fails and removes its output if it finds an external home-directory path, local database, credential file, resume, or application packet.
 
 A durable hosted version needs authenticated per-user access, hosted SQL storage, and private resume-file storage. The local version remains the complete MVP.
 
