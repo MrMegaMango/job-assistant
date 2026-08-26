@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readdirSync, realpathSync, rmSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync, realpathSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, parse, relative, resolve, sep } from 'node:path';
 
@@ -27,6 +27,25 @@ function isInside(parent, child) {
 	);
 }
 
+function auditFunctionConfig(configPath) {
+	try {
+		const config = JSON.parse(readFileSync(configPath, 'utf8'));
+		if (typeof config.handler !== 'string' || config.handler.length === 0) {
+			findings += 1;
+			return;
+		}
+		const functionRoot = dirname(configPath);
+		const handlerPath = resolve(functionRoot, config.handler);
+		if (!isInside(functionRoot, handlerPath) || !existsSync(handlerPath)) {
+			findings += 1;
+			return;
+		}
+		if (!isInside(outputRealPath, realpathSync(handlerPath))) findings += 1;
+	} catch {
+		findings += 1;
+	}
+}
+
 function walk(directory) {
 	for (const entry of readdirSync(directory)) {
 		const absolute = resolve(directory, entry);
@@ -35,6 +54,7 @@ function walk(directory) {
 			outputRelative.includes(`${homeMarker}/`) &&
 			!outputRelative.includes(`${checkoutMarker}/`);
 		if (containsExternalHomePath || sensitiveBasename.test(entry)) findings += 1;
+		if (entry === '.vc-config.json') auditFunctionConfig(absolute);
 
 		const stats = lstatSync(absolute);
 		if (stats.isSymbolicLink()) {

@@ -40,22 +40,35 @@ const boundedRepositoryTraceRoot = `\t// Keep file tracing inside the repository
 \t\t}
 \t}`;
 
+const unsafeHandler = `\t\t\t\thandler: path.relative(base + ancestor, entry),`;
+const repositoryHandler = `\t\t\t\thandler: path.relative(ancestor, entry),`;
+
 const source = readFileSync(adapterPath, 'utf8');
 
-if (source.includes(boundedRepositoryTraceRoot)) {
-	process.exit(0);
-}
-
-const currentTraceRoot = source.includes(legacyRepositoryTraceRoot)
+const currentTraceRoot = source.includes(boundedRepositoryTraceRoot)
+	? null
+	: source.includes(legacyRepositoryTraceRoot)
 	? legacyRepositoryTraceRoot
 	: source.includes(unsafeTraceRoot)
 		? unsafeTraceRoot
-		: null;
+		: undefined;
 
-if (!currentTraceRoot) {
+if (currentTraceRoot === undefined) {
 	throw new Error(
 		'Vercel adapter layout changed; refusing to build until its file-trace boundary is reviewed.'
 	);
 }
 
-writeFileSync(adapterPath, source.replace(currentTraceRoot, boundedRepositoryTraceRoot));
+let hardenedSource = currentTraceRoot
+	? source.replace(currentTraceRoot, boundedRepositoryTraceRoot)
+	: source;
+
+if (hardenedSource.includes(unsafeHandler)) {
+	hardenedSource = hardenedSource.replace(unsafeHandler, repositoryHandler);
+} else if (!hardenedSource.includes(repositoryHandler)) {
+	throw new Error(
+		'Vercel adapter handler layout changed; refusing to build until it is reviewed.'
+	);
+}
+
+if (hardenedSource !== source) writeFileSync(adapterPath, hardenedSource);
