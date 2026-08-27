@@ -6,11 +6,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const response = await resolve(event);
 	response.headers.set('x-content-type-options', 'nosniff');
 	response.headers.set('x-frame-options', 'DENY');
-	response.headers.set('referrer-policy', 'no-referrer');
+	// `no-referrer` makes Chromium serialize the Origin header as `null` for native
+	// form POSTs. `same-origin` keeps same-origin CSRF validation working while still
+	// withholding referrers from employer and policy links on other origins.
+	response.headers.set('referrer-policy', 'same-origin');
 	response.headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
-	response.headers.set(
-		'content-security-policy',
-		"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
-	);
 	return response;
 };

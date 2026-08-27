@@ -8,4 +8,11 @@ describe('deployment security configuration', () => {
 		]);
 		expect(config.kit?.csrf?.trustedOrigins).not.toContain('*');
 	});
+
+	it('uses SvelteKit nonces for executable scripts', () => {
+		expect(config.kit?.csp?.mode).toBe('nonce');
+		expect(config.kit?.csp?.directives?.['script-src']).toEqual(['self']);
+		expect(config.kit?.csp?.directives?.['form-action']).toEqual(['self']);
+		expect(config.kit?.csp?.directives?.['frame-ancestors']).toEqual(['none']);
+	});
 });
