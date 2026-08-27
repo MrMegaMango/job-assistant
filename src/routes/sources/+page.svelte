@@ -1,4 +1,7 @@
 <script lang="ts">
+	import SyncControl from '$lib/components/SyncControl.svelte';
+	import SyncResults from '$lib/components/SyncResults.svelte';
+
 	let { data, form } = $props();
 </script>
 
@@ -11,15 +14,12 @@
 			canonical source and application URL.
 		</p>
 	</div>
-	<form method="POST" action="?/sync"><button type="submit">Sync enabled</button></form>
+	<SyncControl label="Sync enabled" busyLabel="Checking enabled sources…" />
 </section>
 
 {#if form?.message}<div class="notice good">{form.message}</div>{/if}
 {#if form?.syncResults}
-	<div class="notice good">
-		{form.syncResults.map((result: { source: string; count: number; error: string | null }) =>
-			`${result.source}: ${result.error ? `error — ${result.error}` : `${result.count} jobs`}`).join(' · ')}
-	</div>
+	<SyncResults results={form.syncResults} />
 {/if}
 
 <section class="stack" style="margin-top: 1rem">

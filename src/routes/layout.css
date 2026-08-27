@@ -65,6 +65,13 @@ button:hover,
 	filter: brightness(0.94);
 }
 
+button:disabled,
+.button[aria-disabled='true'] {
+	cursor: wait;
+	filter: saturate(0.65);
+	opacity: 0.72;
+}
+
 button.secondary,
 .button.secondary {
 	background: transparent;
@@ -471,8 +478,14 @@ ul.clean {
 }
 
 .empty {
+	display: grid;
+	justify-items: center;
 	padding: 3rem 1.5rem;
 	text-align: center;
+}
+
+.empty p {
+	margin-bottom: 1.25rem;
 }
 
 .source-row,

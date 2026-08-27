@@ -1,4 +1,7 @@
 <script lang="ts">
+	import SyncControl from '$lib/components/SyncControl.svelte';
+	import SyncResults from '$lib/components/SyncResults.svelte';
+
 	let { data, form } = $props();
 
 	function money(min: number, max: number, currency: string): string {
@@ -20,9 +23,7 @@
 			unknown instead of becoming confident guesses.
 		</p>
 	</div>
-	<form method="POST" action="?/sync">
-		<button type="submit">Sync jobs</button>
-	</form>
+	<SyncControl busyLabel="Checking 16 sources…" />
 </section>
 
 {#if data.hostedDemo}
@@ -43,11 +44,7 @@
 {/if}
 
 {#if form?.syncResults}
-	<div class="notice good">
-		<strong>Sync finished.</strong>
-		{form.syncResults.map((result: { source: string; count: number; error: string | null }) =>
-			`${result.source}: ${result.error ? `error — ${result.error}` : `${result.count} jobs`}`).join(' · ')}
-	</div>
+	<SyncResults results={form.syncResults} />
 {/if}
 
 <section class="toolbar" aria-label="Match filters">
@@ -64,7 +61,8 @@
 {#if data.jobs.length === 0}
 	<section class="panel empty">
 		<h2>No matches loaded yet</h2>
-		<p>Sync the enabled public ATS sources, or lower the minimum score.</p>
+		<p>Sync the enabled public ATS sources to build your first ranked briefing.</p>
+		<SyncControl label="Load job matches" busyLabel="Building your briefing…" />
 	</section>
 {:else}
 	<section class="grid" aria-label="Ranked jobs">
