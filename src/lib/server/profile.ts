@@ -56,7 +56,7 @@ export const TAILORED_MATCH_PROFILE = {
 		'cloud security'
 	],
 	preferredLocations: ['San Diego', 'California', 'United States'],
-	remotePreference: 'any',
+	remotePreference: 'remote',
 	minBaseSalary: null,
 	excludedKeywords: []
 } satisfies Pick<

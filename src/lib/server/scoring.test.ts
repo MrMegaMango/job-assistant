@@ -111,6 +111,16 @@ describe('explainable matching', () => {
 		expect(europeRemote.unknowns.join(' ')).toMatch(/region-limited/);
 	});
 
+	it('hard-rejects non-remote jobs when remote work is required', () => {
+		const result = scoreJob(
+			{ ...profile, remotePreference: 'remote' },
+			{ ...job, location: 'San Francisco, CA', remote: false }
+		);
+		expect(result.hardRejected).toBe(true);
+		expect(result.score).toBe(0);
+		expect(result.gaps.join(' ')).toMatch(/not remote/);
+	});
+
 	it('does not hard-reject a non-USD range against a USD salary floor', () => {
 		const result = scoreJob(profile, {
 			...job,

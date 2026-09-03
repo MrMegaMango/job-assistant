@@ -25,6 +25,7 @@ describe('hosted tailored profile', () => {
 		expect(hosted.targetTitles).toEqual(TAILORED_MATCH_PROFILE.targetTitles);
 		expect(hosted.skills).toEqual(TAILORED_MATCH_PROFILE.skills);
 		expect(hosted.focusAreas).toEqual(TAILORED_MATCH_PROFILE.focusAreas);
+		expect(hosted.remotePreference).toBe('remote');
 		expect(JSON.stringify(hosted)).not.toContain('Private');
 	});
 

@@ -19,8 +19,8 @@
 		<p class="eyebrow">Daily briefing</p>
 		<h1>Your strongest job matches, with receipts.</h1>
 		<p class="lede">
-			Every score is traceable to the title, skills, location, and published pay. Missing facts stay
-			unknown instead of becoming confident guesses.
+			Every remote-job score is traceable to the title, skills, location, and published pay. Missing
+			facts stay unknown instead of becoming confident guesses.
 		</p>
 	</div>
 	<SyncControl busyLabel="Checking 16 sources…" />
@@ -55,14 +55,14 @@
 		</label>
 		<button class="secondary" type="submit">Filter</button>
 	</form>
-	<span class="hint">Showing {data.jobs.length} ranked jobs</span>
+	<span class="hint">Showing {data.jobs.length} ranked remote jobs</span>
 </section>
 
 {#if data.jobs.length === 0}
 	<section class="panel empty">
-		<h2>No matches loaded yet</h2>
-		<p>Sync the enabled public ATS sources to build your first ranked briefing.</p>
-		<SyncControl label="Load job matches" busyLabel="Building your briefing…" />
+		<h2>No remote matches loaded yet</h2>
+		<p>Sync the enabled public ATS sources to build your first ranked remote briefing.</p>
+		<SyncControl label="Load remote job matches" busyLabel="Building your briefing…" />
 	</section>
 {:else}
 	<section class="grid" aria-label="Ranked jobs">
