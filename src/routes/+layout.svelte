@@ -79,5 +79,8 @@
 
 <footer>
 	<span>{data.hostedDemo ? 'Hosted preview. Evidence over guesses.' : 'Local-first. Evidence over guesses.'}</span>
-	<a href="/api/health">System status</a>
+	<div class="inline-actions">
+		<a href="/privacy">Privacy</a>
+		<a href="/api/health">System status</a>
+	</div>
 </footer>
