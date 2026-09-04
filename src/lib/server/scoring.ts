@@ -39,7 +39,14 @@ const FOCUS_ALIASES: readonly AliasGroup[] = [
 	['platform engineering', ['platform engineering', 'developer platform', 'internal platform', 'infrastructure platform', 'paas']],
 	['distributed systems', ['distributed systems', 'distributed system']],
 	['performance engineering', ['performance engineering', 'performance optimization', 'low latency', 'throughput', 'scalability']],
-	['cloud security', ['cloud security', 'authentication', 'authorization', 'identity and access', 'zero trust']]
+	['cloud security', ['cloud security', 'authentication', 'authorization', 'identity and access', 'zero trust']],
+	['asynchronous collaboration', ['asynchronous collaboration', 'async first', 'async work', 'asynchronous work']],
+	['backend services', ['backend services', 'backend service', 'backend development', 'server side', 'service development']],
+	['internal tools', ['internal tools', 'internal applications', 'business systems']],
+	['developer tools', ['developer tools', 'developer tooling', 'developer experience', 'devex']],
+	['APIs and integrations', ['api integration', 'api development', 'third party integration', 'integrations']],
+	['maintenance and modernization', ['modernization', 'legacy system', 'brownfield', 'application maintenance']],
+	['documentation-driven engineering', ['documentation driven', 'documentation first', 'design docs', 'technical documentation']]
 ];
 
 const LOCATION_ALIASES: readonly AliasGroup[] = [

@@ -40,7 +40,7 @@ describe('hosted tailored profile', () => {
 
 	it('offers distinct anonymous profiles without leaking stored values', () => {
 		const profiles = listDemoProfiles();
-		expect(profiles).toHaveLength(4);
+		expect(profiles).toHaveLength(5);
 		expect(new Set(profiles.map((profile) => profile.updatedAt)).size).toBe(profiles.length);
 
 		for (const profile of profiles) {
@@ -52,10 +52,26 @@ describe('hosted tailored profile', () => {
 		}
 	});
 
+	it('offers a remote async profile with conservative visible-demand filters', () => {
+		const profile = DEMO_MATCH_PROFILES['remote-async-ic'];
+		expect(profile.criteria.remotePreference).toBe('remote');
+		expect(profile.criteria.focusAreas).toContain('asynchronous collaboration');
+		expect(profile.criteria.excludedKeywords).toEqual(
+			expect.arrayContaining([
+				'on-call',
+				'hybrid',
+				'security clearance',
+				'frequent travel',
+				'environment is intense'
+			])
+		);
+	});
+
 	it('falls back safely when an anonymous-profile cookie is missing or invalid', () => {
 		expect(getSelectedDemoProfileId(undefined)).toBe(DEFAULT_DEMO_PROFILE_ID);
 		expect(getSelectedDemoProfileId('not-a-profile')).toBe(DEFAULT_DEMO_PROFILE_ID);
 		expect(getSelectedDemoProfileId('backend-platform')).toBe('backend-platform');
+		expect(getSelectedDemoProfileId('remote-async-ic')).toBe('remote-async-ic');
 	});
 
 	it('serializes only matching criteria for public pages', () => {

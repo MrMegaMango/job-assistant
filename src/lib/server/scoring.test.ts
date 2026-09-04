@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CandidateProfile, NormalizedJob } from '$lib/types';
+import { DEMO_MATCH_PROFILES } from './profile';
 import { scoreJob } from './scoring';
 
 const profile: CandidateProfile = {
@@ -159,5 +160,35 @@ describe('explainable matching', () => {
 		expect(result.score).toBe(0);
 		expect(result.hardRejected).toBe(true);
 		expect(result.gaps.join(' ')).toMatch(/Excluded phrase/);
+	});
+
+	it('rewards async signals and rejects visible workload conflicts for the OE screen', () => {
+		const oeProfile: CandidateProfile = {
+			...profile,
+			...DEMO_MATCH_PROFILES['remote-async-ic'].criteria
+		};
+		const compatible = scoreJob(oeProfile, {
+			...job,
+			title: 'Senior Backend Engineer',
+			description:
+				'Async-first remote team building internal tools and backend services with design docs and technical documentation.'
+		});
+		const onCall = scoreJob(oeProfile, {
+			...job,
+			title: 'Senior Backend Engineer',
+			description: `${compatible.strengths.join(' ')} Participate in the on-call rotation.`
+		});
+
+		expect(compatible.hardRejected).toBe(false);
+		expect(compatible.matchedFocusAreas).toEqual(
+			expect.arrayContaining([
+				'asynchronous collaboration',
+				'backend services',
+				'internal tools',
+				'documentation-driven engineering'
+			])
+		);
+		expect(onCall.hardRejected).toBe(true);
+		expect(onCall.gaps.join(' ')).toMatch(/on-call/);
 	});
 });

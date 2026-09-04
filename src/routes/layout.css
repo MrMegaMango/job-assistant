@@ -612,7 +612,21 @@ code {
 
 	nav {
 		width: 100%;
-		overflow-x: auto;
+		justify-content: space-between;
+		gap: 0;
+		overflow-x: visible;
+	}
+
+	nav a {
+		padding: 0.5rem 0.2rem;
+		font-size: 0.78rem;
+		white-space: nowrap;
+	}
+
+	nav .count {
+		min-width: 1.2rem;
+		height: 1.2rem;
+		font-size: 0.66rem;
 	}
 
 	.hero,

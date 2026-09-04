@@ -40,6 +40,14 @@
 			<a href="/setup">See the verified criteria</a>.
 		{/if}
 	</div>
+	{#if !data.account?.signedIn && data.activeDemoProfile?.id === 'remote-async-ic'}
+		<div class="notice">
+			<strong>Screening aid only.</strong>
+			A posting cannot establish that two jobs are compatible. Before pursuing one, review both
+			employers’ rules on outside work, conflicts, confidentiality, intellectual property, working
+			hours, and required disclosure.
+		</div>
+	{/if}
 {:else if !data.profileComplete}
 	<div class="notice">
 		Your matching preferences are ready, but application contact details and resume path still need

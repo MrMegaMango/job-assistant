@@ -18,7 +18,8 @@ export type DemoProfileId =
 	| 'staff-ai-infra'
 	| 'backend-platform'
 	| 'applied-ml-data'
-	| 'product-full-stack';
+	| 'product-full-stack'
+	| 'remote-async-ic';
 
 export interface DemoProfileDefinition {
 	id: DemoProfileId;
@@ -270,6 +271,86 @@ export const DEMO_MATCH_PROFILES: Record<DemoProfileId, DemoProfileDefinition> =
 			excludedKeywords: []
 		},
 		updatedAt: '2026-06-04T00:00:00.000Z'
+	},
+	'remote-async-ic': {
+		id: 'remote-async-ic',
+		label: 'Async IC (OE)',
+		headline: 'Remote, asynchronous individual-contributor engineer',
+		description:
+			'Prioritizes async IC work and screens out visible on-call, hybrid, clearance, travel, customer-facing, and people-management demands.',
+		criteria: {
+			targetTitles: [
+				'Senior Backend Engineer',
+				'Senior Software Engineer',
+				'Backend Engineer',
+				'Platform Engineer',
+				'Full Stack Engineer',
+				'Developer Tools Engineer'
+			],
+			skills: [
+				'Go',
+				'TypeScript',
+				'JavaScript',
+				'Node.js',
+				'Python',
+				'SQL',
+				'gRPC',
+				'GraphQL',
+				'REST',
+				'AWS',
+				'GCP',
+				'Docker',
+				'Kubernetes',
+				'Postgres',
+				'Redis',
+				'microservices',
+				'distributed systems',
+				'system design',
+				'observability',
+				'CI/CD',
+				'API design'
+			],
+			focusAreas: [
+				'asynchronous collaboration',
+				'backend services',
+				'internal tools',
+				'developer tools',
+				'APIs and integrations',
+				'maintenance and modernization',
+				'documentation-driven engineering',
+				'platform engineering'
+			],
+			preferredLocations: ['United States', 'California', 'Remote'],
+			remotePreference: 'remote',
+			minBaseSalary: null,
+			excludedKeywords: [
+				'on-call',
+				'24/7',
+				'weekend rotation',
+				'nights and weekends',
+				'security clearance',
+				'public trust',
+				'hybrid',
+				'onsite',
+				'on-site',
+				'in-office',
+				'frequent travel',
+				'travel required',
+				'customer-facing',
+				'client-facing',
+				'environment is intense',
+				'bar is high',
+				'fast-paced',
+				'high velocity',
+				'wear many hats',
+				'production support',
+				'incident response',
+				'direct reports',
+				'people management',
+				'manage a team'
+			]
+		},
+		updatedAt: '2026-09-04T19:10:00.000Z'
 	}
 };
 
