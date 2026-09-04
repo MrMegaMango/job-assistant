@@ -3,8 +3,10 @@ import { COMPANY_LEADERSHIP, getCompanyLeadership } from './company-leadership';
 import { DEFAULT_SOURCES } from './source-catalog';
 
 describe('company leadership research', () => {
-	it('covers every default company exactly once', () => {
-		const catalogCompanies = DEFAULT_SOURCES.map((source) => source.name).sort();
+	it('covers every default employer company exactly once', () => {
+		const catalogCompanies = DEFAULT_SOURCES.filter((source) => source.provider !== 'wwr')
+			.map((source) => source.name)
+			.sort();
 		const researchedCompanies = COMPANY_LEADERSHIP.map((entry) => entry.company).sort();
 
 		expect(new Set(researchedCompanies).size).toBe(researchedCompanies.length);

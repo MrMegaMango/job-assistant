@@ -1,4 +1,4 @@
-export type SourceProvider = 'greenhouse' | 'ashby' | 'lever';
+export type SourceProvider = 'greenhouse' | 'ashby' | 'lever' | 'wwr';
 
 export type RemotePreference = 'remote' | 'remote_preferred' | 'hybrid' | 'any';
 

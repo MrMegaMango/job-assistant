@@ -55,4 +55,37 @@ describe('database migrations', () => {
 			db.prepare("UPDATE profiles SET remote_preference = 'remote_preferred' WHERE id = 1").run()
 		).not.toThrow();
 	});
+
+	it('adds approved RSS providers without losing existing source settings', async () => {
+		const legacy = new Database(join(testDir, 'job-assistant.sqlite'));
+		legacy.exec(`
+			CREATE TABLE sources (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				provider TEXT NOT NULL CHECK (provider IN ('greenhouse', 'ashby', 'lever')),
+				name TEXT NOT NULL,
+				board_token TEXT NOT NULL,
+				enabled INTEGER NOT NULL DEFAULT 1,
+				policy_url TEXT NOT NULL,
+				apply_mode TEXT NOT NULL DEFAULT 'link_only' CHECK (apply_mode IN ('link_only', 'assisted')),
+				last_synced_at TEXT,
+				last_error TEXT,
+				UNIQUE(provider, board_token)
+			);
+			INSERT INTO sources (provider, name, board_token, enabled, policy_url)
+			VALUES ('greenhouse', 'Existing', 'existing', 0, 'https://example.com/policy');
+		`);
+		legacy.close();
+
+		const { getDb } = await import('./database');
+		const db = getDb();
+		const existing = db
+			.prepare("SELECT enabled FROM sources WHERE provider = 'greenhouse' AND board_token = 'existing'")
+			.get() as { enabled: number };
+		expect(existing.enabled).toBe(0);
+		expect(() =>
+			db
+				.prepare('INSERT INTO sources (provider, name, board_token, policy_url) VALUES (?, ?, ?, ?)')
+				.run('wwr', 'RSS', 'test-feed', 'https://example.com/policy')
+		).not.toThrow();
+	});
 });

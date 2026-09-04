@@ -25,7 +25,7 @@ function migrate(db: Database.Database): void {
 
 		CREATE TABLE IF NOT EXISTS sources (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			provider TEXT NOT NULL CHECK (provider IN ('greenhouse', 'ashby', 'lever')),
+			provider TEXT NOT NULL CHECK (provider IN ('greenhouse', 'ashby', 'lever', 'wwr')),
 			name TEXT NOT NULL,
 			board_token TEXT NOT NULL,
 			enabled INTEGER NOT NULL DEFAULT 1,
@@ -160,6 +160,36 @@ function migrate(db: Database.Database): void {
 				DROP TABLE profiles_before_remote_preference;
 			`);
 		})();
+	}
+
+	const sourceSchema = db
+		.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'sources'")
+		.get() as { sql: string } | undefined;
+	if (sourceSchema && !sourceSchema.sql.includes("'wwr'")) {
+		db.pragma('foreign_keys = OFF');
+		try {
+			db.transaction(() => {
+				db.exec(`
+					CREATE TABLE sources_next (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						provider TEXT NOT NULL CHECK (provider IN ('greenhouse', 'ashby', 'lever', 'wwr')),
+						name TEXT NOT NULL,
+						board_token TEXT NOT NULL,
+						enabled INTEGER NOT NULL DEFAULT 1,
+						policy_url TEXT NOT NULL,
+						apply_mode TEXT NOT NULL DEFAULT 'link_only' CHECK (apply_mode IN ('link_only', 'assisted')),
+						last_synced_at TEXT,
+						last_error TEXT,
+						UNIQUE(provider, board_token)
+					);
+					INSERT INTO sources_next SELECT * FROM sources;
+					DROP TABLE sources;
+					ALTER TABLE sources_next RENAME TO sources;
+				`);
+			})();
+		} finally {
+			db.pragma('foreign_keys = ON');
+		}
 	}
 
 	const now = new Date().toISOString();

@@ -3,7 +3,8 @@ import type { SourceProvider } from '$lib/types';
 export const SOURCE_POLICY_URLS: Record<SourceProvider, string> = {
 	greenhouse: 'https://developer.greenhouse.io/job-board.html',
 	ashby: 'https://developers.ashbyhq.com/docs/public-job-posting-api',
-	lever: 'https://github.com/lever/postings-api'
+	lever: 'https://github.com/lever/postings-api',
+	wwr: 'https://weworkremotely.com/remote-job-rss-feed'
 };
 
 export interface CatalogSource {
@@ -25,7 +26,7 @@ function catalog(
 	}));
 }
 
-// Keep this catalog to boards verified against the provider's public posting API.
+// Keep this catalog to sources verified against the provider's public posting endpoint.
 // INSERT OR IGNORE migrations add new entries without re-enabling boards a user paused.
 export const DEFAULT_SOURCES: CatalogSource[] = [
 	...catalog('greenhouse', [
@@ -84,7 +85,9 @@ export const DEFAULT_SOURCES: CatalogSource[] = [
 		['Twilio', 'twilio'],
 		['Vercel', 'vercel'],
 		['Verkada', 'verkada'],
-		['Webflow', 'webflow']
+		['Webflow', 'webflow'],
+		['Automattic', 'automatticcareers'],
+		['Remote', 'remotecom']
 	]),
 	...catalog('ashby', [
 		['Anyscale', 'anyscale'],
@@ -125,5 +128,6 @@ export const DEFAULT_SOURCES: CatalogSource[] = [
 	...catalog('lever', [
 		['Palantir', 'palantir'],
 		['Spotify', 'spotify']
-	])
+	]),
+	...catalog('wwr', [['We Work Remotely – Engineering', 'remote-engineering']])
 ];

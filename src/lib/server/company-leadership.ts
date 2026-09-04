@@ -1,4 +1,4 @@
-export const LEADERSHIP_RESEARCHED_AT = '2026-09-03';
+export const LEADERSHIP_RESEARCHED_AT = '2026-09-04';
 
 export const SURNAME_CONTEXT =
 	'Surname etymology describes a name\'s linguistic or geographic history. It is not evidence of a person\'s race, ethnicity, nationality, ancestry, or identity.';
@@ -96,6 +96,12 @@ export const COMPANY_LEADERSHIP: CompanyLeadership[] = [
 		person('CEO', 'Dan Rogers', 'Rogers', 'English patronymic surname'),
 		person('CTO', 'Amritansh Raghav', 'Raghav', 'Sanskrit-derived surname')
 	]),
+	company(
+		'Automattic',
+		'https://automattic.com/press/',
+		[person('Founder & CEO', 'Matt Mullenweg', 'Mullenweg', UNRESOLVED_ORIGIN)],
+		NO_LISTED_CTO
+	),
 	company(
 		'Block',
 		'https://investors.block.xyz/governance/leadership/default.aspx',
@@ -274,6 +280,10 @@ export const COMPANY_LEADERSHIP: CompanyLeadership[] = [
 		[person('CEO', 'Steve Huffman', 'Huffman', 'German occupational surname')],
 		NO_LISTED_CTO
 	),
+	company('Remote', 'https://remote.com/about', [
+		person('CEO & Co-founder', 'Job van der Voort', 'van der Voort', 'Dutch topographic surname'),
+		person('CTO', 'Sofia Silva', 'Silva', 'Portuguese surname tradition')
+	]),
 	company(
 		'Roblox',
 		'https://about.roblox.com/leadership',

@@ -6,7 +6,7 @@ The complete product is the durable local workflow: personal preferences and app
 
 ## What works in the MVP
 
-- Sync more than 90 validated public Greenhouse, Ashby, and Lever company boards without scraping or login credentials.
+- Sync more than 90 validated public Greenhouse, Ashby, and Lever company boards plus We Work Remotely's public engineering RSS feeds without login credentials.
 - Rank jobs with explainable title, verified-skill, domain-focus, seniority, location, and compensation components.
 - Show employer-posted salary ranges when provided and clearly label a broad BLS benchmark when pay is missing.
 - Shortlist or dismiss jobs and generate an application review packet from verified profile facts.
@@ -60,6 +60,9 @@ The built-in connectors use official public job-posting APIs:
 - [Greenhouse Job Board API](https://developer.greenhouse.io/job-board.html)
 - [Ashby public Job Postings API](https://developers.ashbyhq.com/docs/public-job-posting-api)
 - [Lever Postings API](https://github.com/lever/postings-api)
+- [We Work Remotely public RSS feeds](https://weworkremotely.com/remote-job-rss-feed)
+
+FlexJobs is available from the Sources page as a manual part-time discovery link. The app does not fetch or scrape it; verify any lead on the employer's own site before using it in the matching workflow.
 
 Compensation evidence is prioritized as employer-posted range first. When a software role has no disclosed pay, the UI may show the May 2025 U.S. BLS OEWS software-developer median as a broad national benchmark—not as the employer's range. See the [BLS OEWS tables](https://www.bls.gov/oes/tables.htm).
 

@@ -12,6 +12,6 @@ The build constrains dependency tracing to the repository and audits generated V
 
 The database can contain a resume path, contact details, preferences, generated application notes, and an audit trail. Protect the host account and disk. Do not copy the database, `.env.local`, browser profiles, or generated packets into Git, issues, logs, screenshots, or support chats.
 
-The MVP reads public employer job feeds and never logs in to job boards. It does not scrape LinkedIn or Indeed. Application preparation is local. The app records an approval before sending you to the canonical employer application page, but you review the form and perform the final submission yourself.
+The MVP reads public employer job feeds and We Work Remotely's public RSS feed and never logs in to job boards. FlexJobs is linked for manual discovery but is not fetched or scraped. The app does not scrape LinkedIn or Indeed. Application preparation is local. The app records an approval before sending you to the source application page, but you review the form and perform the final submission yourself.
 
 Job descriptions are treated as untrusted text. They are normalized for display and matching, never executed, and never granted tool access.

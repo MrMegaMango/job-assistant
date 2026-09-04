@@ -9,13 +9,26 @@
 <section class="hero">
 	<div>
 		<p class="eyebrow">Sources</p>
-		<h1>Employer-origin jobs, not scraped feeds.</h1>
+		<h1>Public job sources with clear provenance.</h1>
 		<p class="lede">
-			{data.sources.length} validated company boards are ready across Greenhouse, Ashby, and Lever.
-			Each record keeps its canonical source, application URL, and cited leadership surname notes.
+			{data.sources.length} validated sources are ready across Greenhouse, Ashby, Lever, and We Work
+			Remotely’s public RSS feed. Each record keeps its source and application URL.
 		</p>
 	</div>
 	<SyncControl label="Sync enabled" busyLabel="Checking enabled sources…" />
+</section>
+
+<section class="panel" style="margin-top: 1rem">
+	<h2>Manual flexible-work discovery</h2>
+	<p>
+		FlexJobs does not provide a public read feed, so it is linked rather than scraped. Treat listings as
+		discovery leads and verify the role on the employer’s own site.
+	</p>
+	<a
+		href="https://www.flexjobs.com/remote-jobs/part-time/software-engineering"
+		target="_blank"
+		rel="noreferrer">Browse part-time software-engineering roles on FlexJobs</a
+	>
 </section>
 
 {#if form?.message}<div class="notice good">{form.message}</div>{/if}
@@ -29,13 +42,13 @@
 			<div>
 				<div class="meta">
 					<span class:good={source.enabled} class="badge">{source.enabled ? 'Enabled' : 'Paused'}</span>
-					<span>{source.provider}</span>
+					<span>{source.provider === 'wwr' ? 'We Work Remotely RSS' : source.provider}</span>
 					<span>board: {source.boardToken}</span>
 				</div>
 				<h2 style="margin: 0.45rem 0">{source.name}</h2>
 				{#if source.lastSyncedAt}<p class="hint">Last synced {new Date(source.lastSyncedAt).toLocaleString()}</p>{/if}
 				{#if source.lastError}<p class="notice bad">{source.lastError}</p>{/if}
-				<a href={source.policyUrl} target="_blank" rel="noreferrer">Official API policy</a>
+				<a href={source.policyUrl} target="_blank" rel="noreferrer">Official source details</a>
 				{#if source.leadership}
 					<LeadershipSurnameNote
 						leadership={source.leadership}
