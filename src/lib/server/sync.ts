@@ -10,9 +10,7 @@ export interface SyncResult {
 }
 
 const SYNC_BATCH_SIZE = 6;
-const HOSTED_SYNC_COOLDOWN_MS = 5 * 60 * 1000;
 const HOSTED_EMPTY_REFRESH_BACKOFF_MS = 30 * 60 * 1000;
-let hostedSyncStartedAt = 0;
 let hostedSyncInFlight: Promise<SyncResult[]> | null = null;
 
 function hasRecentSourceSync(sources: JobSource[], now: number): boolean {
@@ -47,18 +45,6 @@ export async function syncEnabledSources(): Promise<SyncResult[]> {
 	if (!isHostedDemo()) return runSync();
 	if (hostedSyncInFlight) return hostedSyncInFlight;
 
-	const remainingMs = HOSTED_SYNC_COOLDOWN_MS - (Date.now() - hostedSyncStartedAt);
-	if (remainingMs > 0) {
-		return [
-			{
-				source: 'Hosted demo',
-				count: 0,
-				error: `Sync is cooling down. Try again in ${Math.ceil(remainingMs / 60_000)} minute(s).`
-			}
-		];
-	}
-
-	hostedSyncStartedAt = Date.now();
 	hostedSyncInFlight = runSync();
 	try {
 		return await hostedSyncInFlight;
