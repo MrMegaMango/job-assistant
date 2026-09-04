@@ -1,14 +1,12 @@
 # High Match Job Assistant
 
-A private, local-first dashboard that finds jobs from public employer ATS feeds, ranks them against your verified experience, explains the match, surfaces compensation evidence, and prepares a review-gated application handoff.
+A private, local-first dashboard built first for one person's real job search. It finds jobs from public employer ATS feeds, ranks them against verified experience, explains the match, surfaces compensation evidence, and prepares a review-gated application handoff.
 
-[Try the live demo](https://high-match-job-assistant.vercel.app)
-
-The public Vercel deployment is tailored to a staff-level AI and backend infrastructure profile using public, non-identifying professional criteria. It never accepts identity, resume, or application-tracking data; clone and run the project locally for the private, durable workflow.
+The complete product is the durable local workflow: personal preferences and application history stay on the user's machine, and the ranking is tuned to that user's actual goals. A constrained hosted preview exists to show the matching experience without accepting private data.
 
 ## What works in the MVP
 
-- Sync public Greenhouse, Ashby, and Lever company boards without scraping or login credentials.
+- Sync more than 90 validated public Greenhouse, Ashby, and Lever company boards without scraping or login credentials.
 - Rank jobs with explainable title, verified-skill, domain-focus, seniority, location, and compensation components.
 - Show employer-posted salary ranges when provided and clearly label a broad BLS benchmark when pay is missing.
 - Shortlist or dismiss jobs and generate an application review packet from verified profile facts.
@@ -26,7 +24,7 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`, review the profile under **Setup**, then choose **Sync jobs**. Sixteen validated public boards are enabled by default, including Anthropic, OpenAI, Fireworks AI, Anyscale, Lambda, CoreWeave, Modal, Baseten, and other AI-infrastructure employers. They can be enabled or disabled under **Sources**.
+Open `http://127.0.0.1:5173`, review the profile under **Setup**, then choose **Sync jobs**. More than 90 validated public boards are enabled by default across AI labs, infrastructure, developer tools, security, fintech, and large technology employers. They can be enabled or disabled under **Sources**, and additional Greenhouse, Ashby, or Lever board URLs can be pasted directly without changing code.
 
 Preview the production build locally:
 
@@ -42,9 +40,11 @@ npm start
 
 Set `JOB_ASSISTANT_DATA_DIR` in `.env.local` only if you need a custom location. The app rejects a data directory inside the Git checkout.
 
-## Vercel demo mode
+## Optional hosted preview
 
-Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. The hosted profile contains professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances; cold briefing and job-detail requests refresh their temporary job data when needed. This makes the hosted site safe as a public product demo, not a durable personal assistant.
+[View the hosted preview](https://high-match-job-assistant.vercel.app). It is a secondary, read-only view of the matching experience; the local app remains the product's focus.
+
+Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. The hosted profile contains professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances; cold briefing and job-detail requests refresh their temporary job data when needed. This keeps the preview separate from the durable personal assistant.
 
 The production build constrains Vercel's dependency trace to the repository and then audits the generated bundle. The build fails and removes its output if it finds an external home-directory path, local database, credential file, resume, or application packet.
 

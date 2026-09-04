@@ -83,6 +83,12 @@ type ApplicationRow = {
 	updated_at: string;
 };
 
+type CachedMatchRow = {
+	job_id: number;
+	job_content_hash: string;
+	result_json: string;
+};
+
 export function hashValue(value: unknown): string {
 	return createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
@@ -338,6 +344,38 @@ function cacheMatch(job: StoredJob, profile: CandidateProfile, result: MatchResu
 		.run(job.id, profile.updatedAt, job.contentHash, JSON.stringify(result), new Date().toISOString());
 }
 
+function cachedMatches(profileUpdatedAt: string): Map<string, MatchResult> {
+	const rows = getDb()
+		.prepare(`
+			SELECT job_id, job_content_hash, result_json
+			FROM match_runs
+			WHERE profile_updated_at = ?
+		`)
+		.all(profileUpdatedAt) as CachedMatchRow[];
+	return new Map(
+		rows.map((row) => [`${row.job_id}:${row.job_content_hash}`, parseJson<MatchResult>(row.result_json)])
+	);
+}
+
+function cacheMatches(
+	profileUpdatedAt: string,
+	entries: Array<{ job: StoredJob; result: MatchResult }>
+): void {
+	if (entries.length === 0) return;
+	const db = getDb();
+	const insert = db.prepare(`
+		INSERT OR IGNORE INTO match_runs (
+			job_id, profile_updated_at, job_content_hash, result_json, created_at
+		) VALUES (?, ?, ?, ?, ?)
+	`);
+	const createdAt = new Date().toISOString();
+	db.transaction(() => {
+		for (const { job, result } of entries) {
+			insert.run(job.id, profileUpdatedAt, job.contentHash, JSON.stringify(result), createdAt);
+		}
+	})();
+}
+
 export function listRankedJobs(options: {
 	minimumScore?: number;
 	limit?: number;
@@ -349,13 +387,16 @@ export function listRankedJobs(options: {
 		.prepare(`${JOB_SELECT} WHERE j.is_active = 1 ORDER BY j.last_seen_at DESC`)
 		.all() as JobRow[];
 	const minimumScore = options.minimumScore ?? 35;
+	const cached = cachedMatches(profile.updatedAt);
+	const uncached: Array<{ job: StoredJob; result: MatchResult }> = [];
 	const ranked = rows.flatMap((row) => {
 		const job = jobFromRow(row);
 		if (!job.remote) return [];
 		const listingAge = getListingAge(job.postedAt, options.now);
 		if (!isRecentListing(listingAge)) return [];
-		const match = scoreJob(profile, job);
-		cacheMatch(job, profile, match);
+		const cacheKey = `${job.id}:${job.contentHash}`;
+		const match = cached.get(cacheKey) ?? scoreJob(profile, job);
+		if (!cached.has(cacheKey)) uncached.push({ job, result: match });
 		return [
 			{
 				...job,
@@ -365,6 +406,7 @@ export function listRankedJobs(options: {
 			}
 		];
 	});
+	cacheMatches(profile.updatedAt, uncached);
 	return ranked
 		.filter((job) => (options.includeRejected ? true : !job.match.hardRejected))
 		.filter((job) => job.match.score >= minimumScore)

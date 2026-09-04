@@ -1,113 +1,9 @@
 import Database from 'better-sqlite3';
 import { join } from 'node:path';
-import type { SourceProvider } from '$lib/types';
 import { getDataDir } from './paths';
+import { DEFAULT_SOURCES } from './source-catalog';
 
 let instance: Database.Database | undefined;
-
-const DEFAULT_SOURCES: Array<{
-	provider: SourceProvider;
-	name: string;
-	boardToken: string;
-	policyUrl: string;
-}> = [
-	{
-		provider: 'greenhouse',
-		name: 'Anthropic',
-		boardToken: 'anthropic',
-		policyUrl: 'https://developer.greenhouse.io/job-board.html'
-	},
-	{
-		provider: 'greenhouse',
-		name: 'Scale AI',
-		boardToken: 'scaleai',
-		policyUrl: 'https://developer.greenhouse.io/job-board.html'
-	},
-	{
-		provider: 'ashby',
-		name: 'Modal',
-		boardToken: 'modal',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Baseten',
-		boardToken: 'baseten',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Cohere',
-		boardToken: 'cohere',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Perplexity',
-		boardToken: 'perplexity',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Fireworks AI',
-		boardToken: 'fireworks',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Anyscale',
-		boardToken: 'anyscale',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Lambda',
-		boardToken: 'lambda',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Prime Intellect',
-		boardToken: 'primeintellect',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'greenhouse',
-		name: 'CoreWeave',
-		boardToken: 'coreweave',
-		policyUrl: 'https://developer.greenhouse.io/job-board.html'
-	},
-	{
-		provider: 'ashby',
-		name: 'OpenAI',
-		boardToken: 'openai',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Cursor',
-		boardToken: 'cursor',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Runway',
-		boardToken: 'runway-ml',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'E2B',
-		boardToken: 'e2b',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	},
-	{
-		provider: 'ashby',
-		name: 'Pika',
-		boardToken: 'pika',
-		policyUrl: 'https://developers.ashbyhq.com/docs/public-job-posting-api'
-	}
-];
 
 function migrate(db: Database.Database): void {
 	db.exec(`
@@ -121,7 +17,7 @@ function migrate(db: Database.Database): void {
 			skills_json TEXT NOT NULL,
 			focus_areas_json TEXT NOT NULL DEFAULT '[]',
 			preferred_locations_json TEXT NOT NULL,
-			remote_preference TEXT NOT NULL CHECK (remote_preference IN ('remote', 'hybrid', 'any')),
+			remote_preference TEXT NOT NULL CHECK (remote_preference IN ('remote', 'remote_preferred', 'hybrid', 'any')),
 			min_base_salary INTEGER,
 			excluded_keywords_json TEXT NOT NULL,
 			updated_at TEXT NOT NULL
@@ -187,6 +83,8 @@ function migrate(db: Database.Database): void {
 			created_at TEXT NOT NULL,
 			UNIQUE(job_id, profile_updated_at, job_content_hash)
 		);
+		CREATE INDEX IF NOT EXISTS match_runs_profile_idx
+			ON match_runs(profile_updated_at, job_id, job_content_hash);
 
 		CREATE TABLE IF NOT EXISTS applications (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -227,12 +125,49 @@ function migrate(db: Database.Database): void {
 		JSON.stringify(['Backend infrastructure', 'Platform engineering', 'Distributed systems'])
 	);
 
+	const profileSchema = db
+		.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'profiles'")
+		.get() as { sql: string } | undefined;
+	if (profileSchema && !profileSchema.sql.includes("'remote_preferred'")) {
+		db.transaction(() => {
+			db.exec(`
+				ALTER TABLE profiles RENAME TO profiles_before_remote_preference;
+				CREATE TABLE profiles (
+					id INTEGER PRIMARY KEY CHECK (id = 1),
+					name TEXT NOT NULL DEFAULT '',
+					email TEXT NOT NULL DEFAULT '',
+					phone TEXT NOT NULL DEFAULT '',
+					resume_path TEXT NOT NULL DEFAULT '',
+					target_titles_json TEXT NOT NULL,
+					skills_json TEXT NOT NULL,
+					focus_areas_json TEXT NOT NULL DEFAULT '[]',
+					preferred_locations_json TEXT NOT NULL,
+					remote_preference TEXT NOT NULL CHECK (remote_preference IN ('remote', 'remote_preferred', 'hybrid', 'any')),
+					min_base_salary INTEGER,
+					excluded_keywords_json TEXT NOT NULL,
+					updated_at TEXT NOT NULL
+				);
+				INSERT INTO profiles (
+					id, name, email, phone, resume_path, target_titles_json, skills_json,
+					focus_areas_json, preferred_locations_json, remote_preference,
+					min_base_salary, excluded_keywords_json, updated_at
+				)
+				SELECT
+					id, name, email, phone, resume_path, target_titles_json, skills_json,
+					focus_areas_json, preferred_locations_json, remote_preference,
+					min_base_salary, excluded_keywords_json, updated_at
+				FROM profiles_before_remote_preference;
+				DROP TABLE profiles_before_remote_preference;
+			`);
+		})();
+	}
+
 	const now = new Date().toISOString();
 	db.prepare(`
 		INSERT OR IGNORE INTO profiles (
 			id, target_titles_json, skills_json, focus_areas_json, preferred_locations_json,
 			remote_preference, min_base_salary, excluded_keywords_json, updated_at
-		) VALUES (1, ?, ?, ?, ?, 'any', NULL, ?, ?)
+		) VALUES (1, ?, ?, ?, ?, 'remote_preferred', NULL, ?, ?)
 	`).run(
 		JSON.stringify(['Software Engineer', 'Machine Learning Engineer', 'Platform Engineer']),
 		JSON.stringify(['Python', 'TypeScript', 'SQL']),

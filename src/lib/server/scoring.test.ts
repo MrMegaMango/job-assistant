@@ -121,6 +121,27 @@ describe('explainable matching', () => {
 		expect(result.gaps.join(' ')).toMatch(/not remote/);
 	});
 
+	it('prefers remote work without rejecting otherwise strong onsite roles', () => {
+		const remoteProfile = { ...profile, remotePreference: 'remote_preferred' as const };
+		const remote = scoreJob(remoteProfile, job);
+		const preferredOnsite = scoreJob(remoteProfile, {
+			...job,
+			location: 'San Diego, California',
+			remote: false
+		});
+		const otherOnsite = scoreJob(remoteProfile, {
+			...job,
+			location: 'New York, New York',
+			remote: false
+		});
+
+		expect(remote.components.location).toBe(10);
+		expect(preferredOnsite.components.location).toBe(7);
+		expect(otherOnsite.components.location).toBe(2);
+		expect(preferredOnsite.hardRejected).toBe(false);
+		expect(preferredOnsite.gaps.join(' ')).toMatch(/prefers remote work/);
+	});
+
 	it('does not hard-reject a non-USD range against a USD salary floor', () => {
 		const result = scoreJob(profile, {
 			...job,

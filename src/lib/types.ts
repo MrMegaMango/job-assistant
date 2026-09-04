@@ -1,6 +1,6 @@
 export type SourceProvider = 'greenhouse' | 'ashby' | 'lever';
 
-export type RemotePreference = 'remote' | 'hybrid' | 'any';
+export type RemotePreference = 'remote' | 'remote_preferred' | 'hybrid' | 'any';
 
 export interface CandidateProfile {
 	id: number;

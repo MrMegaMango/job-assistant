@@ -10,8 +10,8 @@
 		<p class="eyebrow">Sources</p>
 		<h1>Employer-origin jobs, not scraped feeds.</h1>
 		<p class="lede">
-			The MVP reads public company board APIs from Greenhouse, Ashby, and Lever. Each record keeps its
-			canonical source and application URL.
+			{data.sources.length} validated company boards are ready across Greenhouse, Ashby, and Lever.
+			Each record keeps its canonical source and application URL.
 		</p>
 	</div>
 	<SyncControl label="Sync enabled" busyLabel="Checking enabled sources…" />
@@ -37,7 +37,7 @@
 				<a href={source.policyUrl} target="_blank" rel="noreferrer">Official API policy</a>
 			</div>
 			{#if data.hostedDemo}
-				<span class="badge warn">Fixed in demo</span>
+				<span class="badge warn">Fixed in preview</span>
 			{:else}<form method="POST" action="?/toggle">
 				<input type="hidden" name="sourceId" value={source.id} />
 				<input type="hidden" name="enabled" value={String(!source.enabled)} />
@@ -49,11 +49,12 @@
 
 {#if !data.hostedDemo}<form method="POST" action="?/add" class="panel stack" style="margin-top: 1rem">
 	<h2>Add a company board</h2>
-	<p class="hint">Use the board slug from the company's public Greenhouse, Ashby, or Lever URL.</p>
+	<p class="hint">Paste a public board URL for automatic detection, or choose a provider and enter its slug.</p>
 	<div class="form-grid">
 		<label>
 			Provider
 			<select name="provider">
+				<option value="">Detect from URL</option>
 				<option value="greenhouse">Greenhouse</option>
 				<option value="ashby">Ashby</option>
 				<option value="lever">Lever</option>
@@ -64,8 +65,8 @@
 			<input name="name" required />
 		</label>
 		<label class="wide">
-			Board token
-			<input name="boardToken" required placeholder="company-slug" />
+			Board slug or URL
+			<input name="boardToken" required placeholder="https://jobs.ashbyhq.com/company" />
 		</label>
 	</div>
 	<button type="submit">Add source</button>

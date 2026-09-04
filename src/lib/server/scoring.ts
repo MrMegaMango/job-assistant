@@ -124,6 +124,7 @@ export function scoreJob(profile: CandidateProfile, job: NormalizedJob): MatchRe
 	const matchedFocusAreas = configuredMatches(profile.focusAreas, FOCUS_ALIASES, haystack);
 	const excluded = profile.excludedKeywords.filter((keyword) => containsPhrase(haystack, keyword));
 	const remoteMismatch = profile.remotePreference === 'remote' && !job.remote;
+	const remotePreferenceGap = profile.remotePreference === 'remote_preferred' && !job.remote;
 	const annualUsdSalary =
 		job.salary?.period === 'year' && job.salary.currency.toUpperCase() === 'USD' ? job.salary : null;
 	const payMismatch =
@@ -183,17 +184,18 @@ export function scoreJob(profile: CandidateProfile, job: NormalizedJob): MatchRe
 		hasAnyPhrase(locationText, ['worldwide', 'anywhere', 'global']) ||
 		locationText.replace(/\b(remote|distributed|work from home)\b/g, ' ').trim().length === 0;
 	const regionLimitedRemote = job.remote && !preferredLocation && !genericRemoteLocation;
-	const location = job.remote
-		? regionLimitedRemote
-			? 3
-			: profile.remotePreference === 'remote'
-			? 10
-			: 8
-		: preferredLocation
-			? 10
-			: profile.remotePreference === 'any'
-				? 4
-				: 0;
+	let location: number;
+	if (job.remote) {
+		const prioritizesRemote =
+			profile.remotePreference === 'remote' || profile.remotePreference === 'remote_preferred';
+		location = regionLimitedRemote ? 3 : prioritizesRemote ? 10 : 8;
+	} else if (profile.remotePreference === 'remote_preferred') {
+		location = preferredLocation ? 7 : 2;
+	} else if (preferredLocation) {
+		location = 10;
+	} else {
+		location = profile.remotePreference === 'any' ? 4 : 0;
+	}
 
 	let compensation = 1.5;
 	if (annualUsdSalary) {
@@ -242,6 +244,7 @@ export function scoreJob(profile: CandidateProfile, job: NormalizedJob): MatchRe
 	}
 	if (excluded.length > 0) gaps.push(`Excluded phrase found: ${excluded.join(', ')}.`);
 	if (remoteMismatch) gaps.push('Posting is not remote, but your profile requires remote work.');
+	if (remotePreferenceGap) gaps.push('Posting is not remote, though your profile prefers remote work.');
 	if (payMismatch) gaps.push('The posted annual USD maximum is below your configured base-salary floor.');
 
 	let confidence = 45;

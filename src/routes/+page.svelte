@@ -23,7 +23,7 @@
 			facts stay unknown instead of becoming confident guesses.
 		</p>
 	</div>
-	<SyncControl busyLabel="Checking 16 sources…" />
+	<SyncControl busyLabel={`Checking ${data.enabledSourceCount} sources…`} />
 </section>
 
 {#if data.hostedDemo}
@@ -103,7 +103,7 @@
 				<div class="row-between" style="margin-top: 1rem">
 					<a class="button secondary" href={`/jobs/${job.id}`}>Why it matches</a>
 					{#if data.hostedDemo}
-						<span class="badge warn">Demo preview</span>
+						<span class="badge warn">Hosted preview</span>
 					{:else if job.applicationState}
 						<span class="badge good">{job.applicationState.replaceAll('_', ' ')}</span>
 					{:else}

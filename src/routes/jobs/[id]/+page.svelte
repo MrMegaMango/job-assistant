@@ -101,7 +101,7 @@
 		<section class="panel stack">
 			<p class="eyebrow">Application</p>
 			{#if data.hostedDemo}
-				<p>Application packets are disabled in the disposable demo.</p>
+				<p>Application packets are available only in the private local app.</p>
 				<a class="button" href={data.job.applyUrl} target="_blank" rel="noreferrer">Open employer form</a>
 			{:else if !data.application}
 				<p>Shortlist this job before creating an application packet.</p>

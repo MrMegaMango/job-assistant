@@ -30,7 +30,7 @@
 
 {#if data.hostedDemo}
 	<div class="demo-banner">
-		<strong>Tailored public demo.</strong> Matches use a verified Staff AI/backend infrastructure profile.
+		<strong>Read-only hosted preview.</strong> Matches use a verified Staff AI/backend infrastructure profile.
 		Job data may reset; identity, resume, and application tracking stay local-only.
 	</div>
 {/if}
@@ -38,6 +38,6 @@
 <main>{@render children()}</main>
 
 <footer>
-	<span>{data.hostedDemo ? 'Hosted demo. Evidence over guesses.' : 'Local-first. Evidence over guesses.'}</span>
+	<span>{data.hostedDemo ? 'Hosted preview. Evidence over guesses.' : 'Local-first. Evidence over guesses.'}</span>
 	<a href="/api/health">System status</a>
 </footer>

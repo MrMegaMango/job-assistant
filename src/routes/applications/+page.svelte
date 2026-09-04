@@ -13,8 +13,8 @@
 {#if data.hostedDemo}
 	<section class="panel empty" style="margin-top: 1rem">
 		<h2>Application tracking is local-only</h2>
-		<p>The hosted demo does not collect contact details, resumes, application packets, or submission history.</p>
-		<a class="button" href="/">Browse demo matches</a>
+		<p>The hosted preview does not collect contact details, resumes, application packets, or submission history.</p>
+		<a class="button" href="/">Browse match preview</a>
 	</section>
 {:else if data.applications.length === 0}
 	<section class="panel empty" style="margin-top: 1rem">

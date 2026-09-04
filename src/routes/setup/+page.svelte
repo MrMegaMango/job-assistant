@@ -15,7 +15,7 @@
 
 {#if data.hostedDemo}
 	<div class="notice">
-		This public demo uses a tailored professional profile while keeping identity, contact details,
+		This hosted preview uses a tailored professional profile while keeping identity, contact details,
 		resume files, and application data out of the deployment.
 	</div>
 {:else if data.saved}<div class="notice good">Profile saved. Future scores use this version.</div>{/if}
@@ -29,7 +29,7 @@
 		<div>
 			<p class="eyebrow">Active match profile</p>
 			<h2>Staff AI and backend infrastructure engineer</h2>
-			<p class="hint">Verified public experience only. No private application identity is loaded.</p>
+			<p class="hint">Verified professional experience only. No private application identity is loaded.</p>
 		</div>
 		<div class="form-grid">
 			<div>
@@ -54,7 +54,7 @@
 				<h3>Location scope</h3>
 				<div class="tag-list">
 					{#each data.publicProfile?.preferredLocations ?? [] as location}<span class="badge">{location}</span>{/each}
-					<span class="badge">Remote or onsite considered</span>
+					<span class="badge">Remote preferred</span>
 				</div>
 			</div>
 		</div>
@@ -111,9 +111,10 @@
 			<textarea name="preferredLocations">{data.profile?.preferredLocations.join('\n') ?? ''}</textarea>
 		</label>
 		<label>
-			Work-location rule
+			Work-location preference
 			<select name="remotePreference" value={data.profile?.remotePreference ?? 'any'}>
 				<option value="any">Any arrangement</option>
+				<option value="remote_preferred">Remote preferred</option>
 				<option value="hybrid">Hybrid preferred</option>
 				<option value="remote">Remote required</option>
 			</select>

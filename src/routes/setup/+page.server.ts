@@ -40,7 +40,7 @@ export const actions: Actions = {
 		if (targetTitles.length === 0) return fail(400, { message: 'Add at least one target title.' });
 		if (skills.length === 0) return fail(400, { message: 'Add at least one verified skill.' });
 		if (focusAreas.length === 0) return fail(400, { message: 'Add at least one preferred focus area.' });
-		if (!['remote', 'hybrid', 'any'].includes(remotePreference)) {
+		if (!['remote', 'remote_preferred', 'hybrid', 'any'].includes(remotePreference)) {
 			return fail(400, { message: 'Choose a valid work-location preference.' });
 		}
 		if (minBaseSalary !== null && (!Number.isFinite(minBaseSalary) || minBaseSalary < 0)) {
