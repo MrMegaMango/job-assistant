@@ -65,10 +65,7 @@
 					<button class="secondary" type="submit">Switch</button>
 				</form>
 				{#if data.account?.configured}
-					<form method="POST" action="/auth/login">
-						<input type="hidden" name="returnTo" value="/setup" />
-						<button type="submit">Continue with Google</button>
-					</form>
+					<a class="button" href="/auth/login?returnTo=%2Fsetup">Continue with Google</a>
 				{/if}
 			</div>
 		{/if}

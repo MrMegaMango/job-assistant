@@ -123,10 +123,7 @@
 				<p>Google sign-in creates one private, editable matching profile for this account. Anonymous browsing remains available.</p>
 			</div>
 			{#if data.account?.configured}
-				<form method="POST" action="/auth/login">
-					<input type="hidden" name="returnTo" value="/setup" />
-					<button type="submit">Continue with Google</button>
-				</form>
+				<a class="button" href="/auth/login?returnTo=%2Fsetup">Continue with Google</a>
 			{:else}
 				<p class="hint">Google sign-in is not connected on this deployment yet.</p>
 			{/if}
