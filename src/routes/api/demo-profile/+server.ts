@@ -2,13 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isHostedDemo } from '$lib/server/deployment';
 import { DEMO_PROFILE_COOKIE, isDemoProfileId } from '$lib/server/profile';
-
-function safeReturnPath(value: FormDataEntryValue | null): string {
-	const path = typeof value === 'string' ? value : '/';
-	return path.startsWith('/') && !path.startsWith('//') && !path.includes('\\') && !/[\r\n]/.test(path)
-		? path
-		: '/';
-}
+import { safeReturnPath } from '$lib/server/safe-return';
 
 export const POST: RequestHandler = async ({ cookies, request, url }) => {
 	if (!isHostedDemo()) throw error(404, 'Not found.');

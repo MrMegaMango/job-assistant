@@ -7,6 +7,7 @@ import {
 	getSelectedDemoProfileId,
 	listDemoProfiles,
 	toHostedDemoProfile,
+	toHostedSavedProfile,
 	toPublicMatchProfile
 } from './profile';
 
@@ -66,5 +67,30 @@ describe('hosted tailored profile', () => {
 		expect(publicProfile).not.toHaveProperty('resumePath');
 		expect(publicProfile).not.toHaveProperty('excludedKeywords');
 		expect(publicProfile).not.toHaveProperty('minBaseSalary');
+	});
+
+	it('applies a saved account profile without exposing stored local identity', () => {
+		const hosted = toHostedSavedProfile(stored, {
+			targetTitles: ['Principal Platform Engineer'],
+			skills: ['Rust'],
+			focusAreas: ['developer platforms'],
+			preferredLocations: ['Remote'],
+			remotePreference: 'remote',
+			minBaseSalary: 250_000,
+			excludedKeywords: ['gambling'],
+			updatedAt: '2026-09-04T00:00:00.000Z'
+		});
+
+		expect(hosted).toMatchObject({
+			name: '',
+			email: '',
+			phone: '',
+			resumePath: '',
+			targetTitles: ['Principal Platform Engineer'],
+			skills: ['Rust'],
+			minBaseSalary: 250_000
+		});
+		expect(hosted.updatedAt).toMatch(/^saved:2026-09-04T00:00:00\.000Z:[a-f0-9]{64}$/);
+		expect(JSON.stringify(hosted)).not.toContain('Private');
 	});
 });

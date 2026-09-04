@@ -13,7 +13,12 @@ import type {
 import { getDb } from './database';
 import { isHostedDemo } from './deployment';
 import { getListingAge, isRecentListing } from './listing-age';
-import { toHostedDemoProfile, type DemoProfileId } from './profile';
+import {
+	toHostedDemoProfile,
+	toHostedSavedProfile,
+	type DemoProfileId,
+	type SavedMatchProfile
+} from './profile';
 import { scoreJob } from './scoring';
 
 type ProfileRow = {
@@ -183,10 +188,16 @@ function applicationFromRow(row: ApplicationRow): ApplicationRecord {
 	};
 }
 
-export function getProfile(demoProfileId?: DemoProfileId): CandidateProfile {
+export function getProfile(
+	demoProfileId?: DemoProfileId,
+	savedMatchProfile?: SavedMatchProfile | null
+): CandidateProfile {
 	const row = getDb().prepare('SELECT * FROM profiles WHERE id = 1').get() as ProfileRow;
 	const profile = profileFromRow(row);
-	return isHostedDemo() ? toHostedDemoProfile(profile, demoProfileId) : profile;
+	if (!isHostedDemo()) return profile;
+	return savedMatchProfile
+		? toHostedSavedProfile(profile, savedMatchProfile)
+		: toHostedDemoProfile(profile, demoProfileId);
 }
 
 export function saveProfile(profile: Omit<CandidateProfile, 'id' | 'updatedAt'>): CandidateProfile {
@@ -382,8 +393,9 @@ export function listRankedJobs(options: {
 	includeRejected?: boolean;
 	now?: Date | number;
 	demoProfileId?: DemoProfileId;
+	savedMatchProfile?: SavedMatchProfile | null;
 } = {}): RankedJob[] {
-	const profile = getProfile(options.demoProfileId);
+	const profile = getProfile(options.demoProfileId, options.savedMatchProfile);
 	const rows = getDb()
 		.prepare(`${JOB_SELECT} WHERE j.is_active = 1 ORDER BY j.last_seen_at DESC`)
 		.all() as JobRow[];
@@ -415,10 +427,14 @@ export function listRankedJobs(options: {
 		.slice(0, options.limit ?? 100);
 }
 
-export function getJob(id: number, demoProfileId?: DemoProfileId): RankedJob | null {
+export function getJob(
+	id: number,
+	demoProfileId?: DemoProfileId,
+	savedMatchProfile?: SavedMatchProfile | null
+): RankedJob | null {
 	const row = getDb().prepare(`${JOB_SELECT} WHERE j.id = ?`).get(id) as JobRow | undefined;
 	if (!row) return null;
-	const profile = getProfile(demoProfileId);
+	const profile = getProfile(demoProfileId, savedMatchProfile);
 	const job = jobFromRow(row);
 	const listingAge = getListingAge(job.postedAt);
 	const match = scoreJob(profile, job);

@@ -30,23 +30,48 @@
 
 {#if data.hostedDemo}
 	<div class="demo-banner">
-		<div>
-			<strong>Anonymous hosted preview.</strong>
-			Matches use the {data.activeDemoProfile?.headline ?? 'selected professional profile'}.
-			Identity, resumes, and applications stay local-only.
-		</div>
-		<form method="POST" action="/api/demo-profile" class="demo-profile-switcher">
-			<input type="hidden" name="returnTo" value={data.returnTo} />
-			<label>
-				Match profile
-				<select name="profileId" value={data.activeDemoProfile?.id}>
-					{#each data.demoProfiles as profile}
-						<option value={profile.id}>{profile.label}</option>
-					{/each}
-				</select>
-			</label>
-			<button class="secondary" type="submit">Switch</button>
-		</form>
+		{#if data.account?.signedIn}
+			<div>
+				<strong>{data.account.profileSaved ? 'Personalized profile.' : 'Google account connected.'}</strong>
+				{data.account.profileSaved
+					? 'Matches use your private saved preferences.'
+					: 'Create your private matching profile to personalize scores.'}
+				Identity, resumes, and applications stay local-only.
+			</div>
+			<div class="inline-actions">
+				<a class="button secondary" href="/setup">{data.account.profileSaved ? 'Edit profile' : 'Create profile'}</a>
+				<form method="POST" action="/auth/logout">
+					<input type="hidden" name="returnTo" value={data.returnTo} />
+					<button class="secondary" type="submit">Sign out</button>
+				</form>
+			</div>
+		{:else}
+			<div>
+				<strong>Anonymous hosted preview.</strong>
+				Matches use the {data.activeDemoProfile?.headline ?? 'selected professional profile'}.
+				Sign in only if you want a profile saved across devices.
+			</div>
+			<div class="inline-actions">
+				<form method="POST" action="/api/demo-profile" class="demo-profile-switcher">
+					<input type="hidden" name="returnTo" value={data.returnTo} />
+					<label>
+						Match profile
+						<select name="profileId" value={data.activeDemoProfile?.id}>
+							{#each data.demoProfiles as profile}
+								<option value={profile.id}>{profile.label}</option>
+							{/each}
+						</select>
+					</label>
+					<button class="secondary" type="submit">Switch</button>
+				</form>
+				{#if data.account?.configured}
+					<form method="POST" action="/auth/login">
+						<input type="hidden" name="returnTo" value="/setup" />
+						<button type="submit">Continue with Google</button>
+					</form>
+				{/if}
+			</div>
+		{/if}
 	</div>
 {/if}
 

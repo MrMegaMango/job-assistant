@@ -7,7 +7,7 @@ import { softwareDeveloperBenchmark } from '$lib/server/salary';
 import { listRankedJobs } from '$lib/server/store';
 import { ensureHostedJobs } from '$lib/server/sync';
 
-export const GET: RequestHandler = async ({ cookies, url }) => {
+export const GET: RequestHandler = async ({ cookies, locals, url }) => {
 	const generatedAt = new Date();
 	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
 	const requestedLimit = Number(url.searchParams.get('limit') ?? 10);
@@ -17,7 +17,13 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
 		? Math.max(0, Math.min(95, requestedMinimum))
 		: 65;
 	await ensureHostedJobs();
-	const jobs = listRankedJobs({ limit, minimumScore, now: generatedAt, demoProfileId }).map((job) => ({
+	const jobs = listRankedJobs({
+		limit,
+		minimumScore,
+		now: generatedAt,
+		demoProfileId,
+		savedMatchProfile: locals.savedMatchProfile
+	}).map((job) => ({
 		id: job.id,
 		company: job.company,
 		title: job.title,
@@ -38,7 +44,8 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
 	}));
 	return json({
 		generatedAt: generatedAt.toISOString(),
-		demoProfileId: isHostedDemo() ? demoProfileId : null,
+		profileSource: isHostedDemo() ? (locals.savedMatchProfile ? 'personal' : 'anonymous') : 'local',
+		demoProfileId: isHostedDemo() && !locals.savedMatchProfile ? demoProfileId : null,
 		minimumScore,
 		maximumListingAgeDays: MAX_LISTING_AGE_DAYS,
 		jobs

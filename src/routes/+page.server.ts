@@ -7,18 +7,24 @@ import { DEMO_PROFILE_COOKIE, getSelectedDemoProfileId } from '$lib/server/profi
 import { listRankedJobs, getProfile } from '$lib/server/store';
 import { syncEnabledSources } from '$lib/server/sync';
 
-export const load: PageServerLoad = ({ cookies, url }) => {
+export const load: PageServerLoad = ({ cookies, locals, url }) => {
 	const now = new Date();
 	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
 	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 60);
 	const minimumScore = Number.isFinite(requestedMinimum)
 		? Math.min(95, Math.max(0, requestedMinimum))
 		: 60;
-	const jobs = listRankedJobs({ minimumScore, limit: 120, now, demoProfileId }).map(({ description, ...job }) => ({
+	const jobs = listRankedJobs({
+		minimumScore,
+		limit: 120,
+		now,
+		demoProfileId,
+		savedMatchProfile: locals.savedMatchProfile
+	}).map(({ description, ...job }) => ({
 		...job,
 		excerpt: description.slice(0, 420)
 	}));
-	const profile = getProfile(demoProfileId);
+	const profile = getProfile(demoProfileId, locals.savedMatchProfile);
 	return {
 		jobs,
 		minimumScore,

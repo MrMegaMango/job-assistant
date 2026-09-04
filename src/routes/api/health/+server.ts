@@ -8,16 +8,17 @@ import {
 } from '$lib/server/profile';
 import { getProfile, getStats, listApplications, listSources } from '$lib/server/store';
 
-export const GET: RequestHandler = ({ cookies }) => {
+export const GET: RequestHandler = ({ cookies, locals }) => {
 	const hostedDemo = isHostedDemo();
 	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
-	const profile = getProfile(demoProfileId);
+	const profile = getProfile(demoProfileId, locals.savedMatchProfile);
 	const stats = getStats();
 	const sources = listSources();
 	return json({
 		status: 'ok',
 		mode: hostedDemo ? 'disposable-hosted-demo' : 'local',
-		demoProfile: hostedDemo
+		profileSource: hostedDemo ? (locals.savedMatchProfile ? 'personal' : 'anonymous') : 'local',
+		demoProfile: hostedDemo && !locals.savedMatchProfile
 			? { id: demoProfileId, label: getDemoProfile(demoProfileId).label }
 			: null,
 		profileConfigured: Boolean(profile.targetTitles.length && profile.skills.length && profile.focusAreas.length),

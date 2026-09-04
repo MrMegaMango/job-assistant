@@ -18,13 +18,13 @@ function jobId(params: { id: string }): number {
 	return id;
 }
 
-export const load: PageServerLoad = async ({ cookies, params, url }) => {
+export const load: PageServerLoad = async ({ cookies, locals, params, url }) => {
 	const id = jobId(params);
 	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
-	let job = getJob(id, demoProfileId);
+	let job = getJob(id, demoProfileId, locals.savedMatchProfile);
 	if (!job && isHostedDemo()) {
 		await ensureHostedJobs();
-		job = getJob(id, demoProfileId);
+		job = getJob(id, demoProfileId, locals.savedMatchProfile);
 	}
 	if (!job) throw error(404, 'Job not found.');
 	return {

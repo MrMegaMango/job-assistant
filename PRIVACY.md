@@ -2,7 +2,11 @@
 
 High Match Job Assistant stores its SQLite database outside the Git checkout. On Linux and WSL the default is `~/.local/share/job-assistant`; on Windows it uses `%LOCALAPPDATA%\JobAssistant`.
 
-On Vercel, the app is only a disposable, read-only preview of the personal local workflow. Its temporary database lives under `/tmp`, may reset at any time, and the server rejects custom profile and application-state changes. Visitors may switch among built-in anonymous professional profiles; the chosen profile ID is stored in an HTTP-only, same-site browser cookie. Public pages receive only non-identifying matching criteria; identity, contact, resume, salary-floor, exclusion, and application fields are not serialized. Do not enter personal data into the hosted preview or remove those guards without first adding authentication and durable private storage.
+On Vercel, the job cache remains a disposable preview of the personal local workflow. Its temporary database lives under `/tmp` and may reset at any time. Visitors may switch among built-in anonymous professional profiles; the chosen profile ID is stored in an HTTP-only, same-site browser cookie.
+
+Optional Google sign-in creates one private matching profile per account in Supabase Postgres. Row-level-security policies restrict reads and writes to the authenticated user ID. The matching-profile record contains target titles, verified skills, focus areas, location preference, salary floor, and exclusion keywords. It does not contain a name, email address, phone number, resume, application answers, application state, or Google provider tokens. Supabase and Google separately maintain the account identity needed for authentication under their respective policies.
+
+Hosted identity, contact, resume, shortlisting, application-packet, and submission-tracking features remain disabled. Do not enter those details into the hosted matching fields.
 
 The build constrains dependency tracing to the repository and audits generated Vercel output. It fails closed if a traced path resolves outside the checkout or if the output contains a credential, local database, resume, application packet, or external home-directory path.
 

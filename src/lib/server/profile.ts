@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto';
 import type { CandidateProfile } from '$lib/types';
 
-type MatchProfileCriteria = Pick<
+export type MatchProfileCriteria = Pick<
 	CandidateProfile,
 	| 'targetTitles'
 	| 'skills'
@@ -10,6 +11,8 @@ type MatchProfileCriteria = Pick<
 	| 'minBaseSalary'
 	| 'excludedKeywords'
 >;
+
+export type SavedMatchProfile = MatchProfileCriteria & { updatedAt: string };
 
 export type DemoProfileId =
 	| 'staff-ai-infra'
@@ -328,5 +331,26 @@ export function toHostedDemoProfile(
 		minBaseSalary: selected.criteria.minBaseSalary,
 		excludedKeywords: [...selected.criteria.excludedKeywords],
 		updatedAt: selected.updatedAt
+	};
+}
+
+export function toHostedSavedProfile(
+	stored: CandidateProfile,
+	profile: SavedMatchProfile
+): CandidateProfile {
+	return {
+		...stored,
+		name: '',
+		email: '',
+		phone: '',
+		resumePath: '',
+		targetTitles: [...profile.targetTitles],
+		skills: [...profile.skills],
+		focusAreas: [...profile.focusAreas],
+		preferredLocations: [...profile.preferredLocations],
+		remotePreference: profile.remotePreference,
+		minBaseSalary: profile.minBaseSalary,
+		excludedKeywords: [...profile.excludedKeywords],
+		updatedAt: `saved:${profile.updatedAt}:${createHash('sha256').update(JSON.stringify(profile)).digest('hex')}`
 	};
 }

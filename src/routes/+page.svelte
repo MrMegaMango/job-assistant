@@ -28,9 +28,17 @@
 
 {#if data.hostedDemo}
 	<div class="notice good">
-		<strong>{data.activeDemoProfile?.label ?? 'Anonymous'} matching is active.</strong>
-		{data.activeDemoProfile?.description ?? 'Rankings use non-identifying professional criteria.'}
-		<a href="/setup">See the verified criteria</a>.
+		{#if data.account?.profileSaved}
+			<strong>Your personalized matching is active.</strong>
+			Rankings use the private criteria saved to your account. <a href="/setup">Edit your profile</a>.
+		{:else if data.account?.signedIn}
+			<strong>Create your personalized profile.</strong>
+			Rankings use starter criteria until you <a href="/setup">save your own matching profile</a>.
+		{:else}
+			<strong>{data.activeDemoProfile?.label ?? 'Anonymous'} matching is active.</strong>
+			{data.activeDemoProfile?.description ?? 'Rankings use non-identifying professional criteria.'}
+			<a href="/setup">See the verified criteria</a>.
+		{/if}
 	</div>
 {:else if !data.profileComplete}
 	<div class="notice">

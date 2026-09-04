@@ -36,6 +36,8 @@
 		"vitest": "^4.1.8"
 	},
 	"dependencies": {
+		"@supabase/ssr": "^0.7.0",
+		"@supabase/supabase-js": "^2.115.0",
 		"better-sqlite3": "^13.0.3",
 		"zod": "^4.4.3"
 	},
