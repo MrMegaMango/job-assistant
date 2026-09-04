@@ -7,6 +7,7 @@ declare global {
 			requestId: string;
 			supabase: SupabaseClient | null;
 			user: { id: string } | null;
+			savedMatchProfiles: SavedMatchProfile[];
 			savedMatchProfile: SavedMatchProfile | null;
 			savedMatchProfileUnavailable: boolean;
 		}

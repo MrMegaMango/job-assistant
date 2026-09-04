@@ -306,6 +306,7 @@ h2 {
 .inline-actions {
 	display: flex;
 	align-items: end;
+	flex-wrap: wrap;
 	gap: 0.65rem;
 }
 
@@ -637,9 +638,17 @@ code {
 	}
 
 	.demo-banner,
-	.demo-profile-switcher {
+	.demo-profile-switcher,
+	.demo-banner > .inline-actions,
+	.panel > .inline-actions {
 		align-items: stretch;
 		flex-direction: column;
+	}
+
+	.demo-banner > .inline-actions > *,
+	.demo-banner > .inline-actions > form:not(.demo-profile-switcher) button,
+	.panel > .inline-actions > * {
+		width: 100%;
 	}
 
 	.form-grid .wide {

@@ -12,7 +12,11 @@ export type MatchProfileCriteria = Pick<
 	| 'excludedKeywords'
 >;
 
-export type SavedMatchProfile = MatchProfileCriteria & { updatedAt: string };
+export type SavedMatchProfile = MatchProfileCriteria & {
+	id: string;
+	name: string;
+	updatedAt: string;
+};
 
 export type DemoProfileId =
 	| 'staff-ai-infra'
@@ -376,6 +380,14 @@ export function getDemoProfile(profileId: DemoProfileId): DemoProfileDefinition 
 
 export function listDemoProfiles(): DemoProfileDefinition[] {
 	return Object.values(DEMO_MATCH_PROFILES);
+}
+
+export function isOveremploymentScreen(profile: MatchProfileCriteria): boolean {
+	const exclusions = new Set(profile.excludedKeywords.map((keyword) => keyword.toLowerCase()));
+	return (
+		profile.remotePreference === 'remote' &&
+		['on-call', 'hybrid', 'security clearance'].every((keyword) => exclusions.has(keyword))
+	);
 }
 
 export function toDemoProfileSummary(profile: DemoProfileDefinition): DemoProfileSummary {

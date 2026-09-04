@@ -4,7 +4,7 @@ High Match Job Assistant stores its SQLite database outside the Git checkout. On
 
 On Vercel, the job cache remains a disposable preview of the personal local workflow. Its temporary database lives under `/tmp` and may reset at any time. Visitors may switch among built-in anonymous professional profiles; the chosen profile ID is stored in an HTTP-only, same-site browser cookie.
 
-Optional Google sign-in creates one private matching profile per account in Supabase Postgres. Row-level-security policies restrict reads and writes to the authenticated user ID. The matching-profile record contains target titles, verified skills, focus areas, location preference, salary floor, and exclusion keywords. It does not contain a name, email address, phone number, resume, application answers, application state, or Google provider tokens. Supabase and Google separately maintain the account identity needed for authentication under their respective policies.
+Optional Google sign-in creates private, named matching profiles in Supabase Postgres. Row-level-security policies restrict reads and writes to the authenticated user ID. Each matching-profile record contains a short user-chosen label, target titles, verified skills, focus areas, location preference, salary floor, and exclusion keywords. It does not contain a legal name, email address, phone number, resume, application answers, application state, or Google provider tokens. Supabase and Google separately maintain the account identity needed for authentication under their respective policies.
 
 Hosted identity, contact, resume, shortlisting, application-packet, and submission-tracking features remain disabled. Do not enter those details into the hosted matching fields.
 

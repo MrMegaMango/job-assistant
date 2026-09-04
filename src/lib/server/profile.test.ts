@@ -5,6 +5,7 @@ import {
 	DEMO_MATCH_PROFILES,
 	TAILORED_MATCH_PROFILE,
 	getSelectedDemoProfileId,
+	isOveremploymentScreen,
 	listDemoProfiles,
 	toHostedDemoProfile,
 	toHostedSavedProfile,
@@ -65,6 +66,7 @@ describe('hosted tailored profile', () => {
 				'environment is intense'
 			])
 		);
+		expect(isOveremploymentScreen(profile.criteria)).toBe(true);
 	});
 
 	it('falls back safely when an anonymous-profile cookie is missing or invalid', () => {
@@ -87,6 +89,8 @@ describe('hosted tailored profile', () => {
 
 	it('applies a saved account profile without exposing stored local identity', () => {
 		const hosted = toHostedSavedProfile(stored, {
+			id: '00000000-0000-4000-8000-000000000001',
+			name: 'Platform search',
 			targetTitles: ['Principal Platform Engineer'],
 			skills: ['Rust'],
 			focusAreas: ['developer platforms'],

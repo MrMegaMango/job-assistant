@@ -20,7 +20,8 @@
 		<div class="notice bad">Your saved profile is temporarily unavailable. No anonymous profile has overwritten it.</div>
 	{:else if data.account?.signedIn}
 		<div class="notice good">
-			You are signed in. Matching preferences save privately to your account and follow you across devices.
+			You are signed in. Your {data.account.profileCount === 1 ? 'profile' : 'profiles'} save privately
+			to your account and follow you across devices.
 			Contact details, resume files, and applications remain local-only.
 		</div>
 	{:else}
@@ -38,12 +39,18 @@
 {#if data.hostedDemo}
 	{#if data.account?.signedIn}
 		<form method="POST" action="?/saveAccountProfile" class="panel stack" style="margin-top: 1rem">
+			<input type="hidden" name="profileId" value={data.matchingProfile?.id ?? ''} />
 			<div>
-				<p class="eyebrow">Personalized match profile</p>
-				<h2>{data.account.profileSaved ? 'Edit your saved profile' : 'Create your profile'}</h2>
+				<p class="eyebrow">Saved match profile</p>
+				<h2>{data.creatingProfile ? 'Create another profile' : `Edit ${data.matchingProfile?.name ?? 'your profile'}`}</h2>
 				<p class="hint">Only matching facts and preferences are stored online. Include skills you can support with evidence.</p>
 			</div>
 			<div class="form-grid">
+				<label>
+					Profile name
+					<input name="profileName" maxlength="60" required value={data.matchingProfile?.name ?? ''} />
+					<small>Use a short label such as Primary or Async IC (OE).</small>
+				</label>
 				<label class="wide">
 					Target titles
 					<textarea name="targetTitles">{data.matchingProfile?.targetTitles.join('\n') ?? ''}</textarea>
@@ -82,7 +89,13 @@
 				</label>
 			</div>
 			<div class="inline-actions">
-				<button type="submit">Save personalized profile</button>
+				<button type="submit">{data.creatingProfile ? 'Create profile' : 'Save profile'}</button>
+				{#if data.creatingProfile}
+					<a class="button secondary" href="/setup">Cancel</a>
+				{:else}
+					<a class="button secondary" href="/setup?new=1">New profile</a>
+					<a class="button secondary" href="/setup?new=1&preset=remote-async-ic">Add Async IC (OE)</a>
+				{/if}
 				<a class="button secondary" href="/">Back to matches</a>
 			</div>
 		</form>
@@ -120,7 +133,7 @@
 			<div>
 				<p class="eyebrow">Saved profile</p>
 				<h2>Make this profile yours.</h2>
-				<p>Google sign-in creates one private, editable matching profile for this account. Anonymous browsing remains available.</p>
+				<p>Google sign-in creates private, editable matching profiles for this account. Anonymous browsing remains available.</p>
 			</div>
 			{#if data.account?.configured}
 				<a class="button" href="/auth/login?returnTo=%2Fsetup">Continue with Google</a>

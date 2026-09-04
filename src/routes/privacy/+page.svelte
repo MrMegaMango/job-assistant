@@ -60,7 +60,7 @@
 	<section>
 		<h2>Your choices</h2>
 		<p>
-			You may stay anonymous, sign out at any time, or overwrite saved matching preferences from Setup.
+			You may stay anonymous, sign out at any time, or create, update, and switch saved matching profiles from Setup.
 			For deletion or privacy requests, use the developer support contact shown on the Google consent
 			screen and do not include sensitive profile details in a public issue.
 		</p>

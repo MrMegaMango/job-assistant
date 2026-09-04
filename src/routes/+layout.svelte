@@ -32,14 +32,31 @@
 	<div class="demo-banner">
 		{#if data.account?.signedIn}
 			<div>
-				<strong>{data.account.profileSaved ? 'Personalized profile.' : 'Google account connected.'}</strong>
+				<strong>{data.activeAccountProfile?.name ?? 'Google account connected'}.</strong>
 				{data.account.profileSaved
 					? 'Matches use your private saved preferences.'
 					: 'Create your private matching profile to personalize scores.'}
 				Identity, resumes, and applications stay local-only.
 			</div>
 			<div class="inline-actions">
+				{#if data.accountProfiles.length > 0}
+					<form method="POST" action="/api/account-profile" class="demo-profile-switcher">
+						<input type="hidden" name="returnTo" value={data.returnTo} />
+						<label>
+							Match profile
+							<select name="profileId" value={data.activeAccountProfile?.id}>
+								{#each data.accountProfiles as profile}
+									<option value={profile.id}>{profile.name}</option>
+								{/each}
+							</select>
+						</label>
+						<button class="secondary" type="submit">Switch</button>
+					</form>
+				{/if}
 				<a class="button secondary" href="/setup">{data.account.profileSaved ? 'Edit profile' : 'Create profile'}</a>
+				{#if data.account.profileSaved}
+					<a class="button secondary" href="/setup?new=1">New profile</a>
+				{/if}
 				<form method="POST" action="/auth/logout">
 					<input type="hidden" name="returnTo" value={data.returnTo} />
 					<button class="secondary" type="submit">Sign out</button>

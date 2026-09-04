@@ -12,7 +12,7 @@ The complete product is the durable local workflow: personal preferences and app
 - Shortlist or dismiss jobs and generate an application review packet from verified profile facts.
 - Record explicit approval, then open the canonical employer application form for your final review and submission.
 - Keep SQLite data and application material outside the repository.
-- Browse hosted matches anonymously, or use Google sign-in for one private, editable matching profile per account.
+- Browse hosted matches anonymously, or use Google sign-in for multiple private, editable matching profiles per account.
 
 The MVP intentionally does **not** automate LinkedIn or Indeed and never performs the final submit click. Cross-employer applicant submission APIs do not exist; ATS submission APIs require employer credentials. Browser-assisted autofill can be added later, one allowlisted ATS at a time, while preserving the final approval gate.
 
@@ -43,11 +43,11 @@ Set `JOB_ASSISTANT_DATA_DIR` in `.env.local` only if you need a custom location.
 
 ## Optional hosted preview
 
-[View the hosted preview](https://high-match-job-assistant.vercel.app). It is a secondary view of the matching experience; the local app remains the product's focus. Visitors can switch among anonymous professional match profiles, and the non-identifying selection is remembered in that browser. Optional Google sign-in adds one private, editable matching profile per account and makes those preferences available across devices.
+[View the hosted preview](https://high-match-job-assistant.vercel.app). It is a secondary view of the matching experience; the local app remains the product's focus. Visitors can switch among anonymous professional match profiles, and the non-identifying selection is remembered in that browser. Optional Google sign-in adds private, named matching profiles that can be created, edited, and switched across devices.
 
 Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable shortlisting, application packets, and submission tracking. Hosted account profiles contain professional matching criteria and job preferences only; contact and resume fields remain blank. Synced jobs can reset between requests or function instances; cold briefing and job-detail requests refresh their temporary job data when needed. This keeps the preview separate from the durable personal assistant.
 
-Hosted accounts use Supabase Auth, Postgres, and row-level security. To enable them, apply `supabase/migrations/20260904000000_user_match_profiles.sql`, enable the Google provider in Supabase, register `/auth/callback` for the deployment, and set `PUBLIC_SUPABASE_URL` plus `PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Vercel. Never configure a service-role or Google client secret as a public environment variable.
+Hosted accounts use Supabase Auth, Postgres, and row-level security. To enable them, apply the SQL files under `supabase/migrations` in timestamp order, enable the Google provider in Supabase, register `/auth/callback` for the deployment, and set `PUBLIC_SUPABASE_URL` plus `PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Vercel. Never configure a service-role or Google client secret as a public environment variable.
 
 The production build constrains Vercel's dependency trace to the repository and then audits the generated bundle. The build fails and removes its output if it finds an external home-directory path, local database, credential file, resume, or application packet.
 

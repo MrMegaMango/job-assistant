@@ -4,6 +4,7 @@ import {
 	DEMO_PROFILE_COOKIE,
 	getDemoProfile,
 	getSelectedDemoProfileId,
+	isOveremploymentScreen,
 	listDemoProfiles,
 	toDemoProfileSummary
 } from '$lib/server/profile';
@@ -25,12 +26,29 @@ export const load: LayoutServerLoad = ({ cookies, locals, url }) => {
 		demoProfiles: hostedDemo && !locals.user ? listDemoProfiles().map(toDemoProfileSummary) : [],
 		activeDemoProfile:
 			hostedDemo && !locals.user ? toDemoProfileSummary(getDemoProfile(demoProfileId)) : null,
+		accountProfiles:
+			hostedDemo && locals.user
+				? locals.savedMatchProfiles.map((profile) => ({
+						id: profile.id,
+						name: profile.name,
+						oeScreen: isOveremploymentScreen(profile)
+					}))
+				: [],
+		activeAccountProfile:
+			hostedDemo && locals.user && savedMatchProfile
+				? {
+						id: savedMatchProfile.id,
+						name: savedMatchProfile.name,
+						oeScreen: isOveremploymentScreen(savedMatchProfile)
+					}
+				: null,
 		account: hostedDemo
 			? {
 					configured: isSupabaseConfigured(),
 					signedIn: Boolean(locals.user),
 					profileSaved: Boolean(savedMatchProfile),
-					profileUnavailable: locals.savedMatchProfileUnavailable
+					profileUnavailable: locals.savedMatchProfileUnavailable,
+					profileCount: locals.savedMatchProfiles.length
 				}
 			: null,
 		returnTo: `${url.pathname}${url.search}`

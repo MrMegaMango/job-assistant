@@ -2,12 +2,17 @@ import { isAbsolute } from 'node:path';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { RemotePreference } from '$lib/types';
-import { savedMatchProfileSchema, saveSavedMatchProfile } from '$lib/server/account-profile';
+import {
+	ACCOUNT_PROFILE_COOKIE,
+	savedMatchProfileInputSchema,
+	saveSavedMatchProfile
+} from '$lib/server/account-profile';
 import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
 import {
 	DEMO_PROFILE_COOKIE,
 	getDemoProfile,
 	getSelectedDemoProfileId,
+	isDemoProfileId,
 	toDemoProfileSummary,
 	toPublicMatchProfile
 } from '$lib/server/profile';
@@ -33,6 +38,17 @@ export const load: PageServerLoad = ({ cookies, locals, url }) => {
 	const hostedDemo = isHostedDemo();
 	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
 	const profile = getProfile(demoProfileId, locals.savedMatchProfile);
+	const creatingProfile = Boolean(
+		hostedDemo && locals.user && url.searchParams.get('new') === '1'
+	);
+	const requestedPresetId = url.searchParams.get('preset') ?? undefined;
+	const presetProfile =
+		creatingProfile && isDemoProfileId(requestedPresetId)
+			? getDemoProfile(requestedPresetId)
+			: null;
+	const matchingProfile = creatingProfile
+		? (presetProfile?.criteria ?? locals.savedMatchProfile ?? getDemoProfile(demoProfileId).criteria)
+		: profile;
 	return {
 		hostedDemo,
 		profile: hostedDemo ? null : profile,
@@ -40,22 +56,28 @@ export const load: PageServerLoad = ({ cookies, locals, url }) => {
 		matchingProfile:
 			hostedDemo && locals.user
 				? {
-						targetTitles: [...profile.targetTitles],
-						skills: [...profile.skills],
-						focusAreas: [...profile.focusAreas],
-						preferredLocations: [...profile.preferredLocations],
-						remotePreference: profile.remotePreference,
-						minBaseSalary: profile.minBaseSalary,
-						excludedKeywords: [...profile.excludedKeywords]
+						id: creatingProfile ? null : (locals.savedMatchProfile?.id ?? null),
+						name: creatingProfile
+							? (presetProfile?.label ?? 'New profile')
+							: (locals.savedMatchProfile?.name ?? 'Primary'),
+						targetTitles: [...matchingProfile.targetTitles],
+						skills: [...matchingProfile.skills],
+						focusAreas: [...matchingProfile.focusAreas],
+						preferredLocations: [...matchingProfile.preferredLocations],
+						remotePreference: matchingProfile.remotePreference,
+						minBaseSalary: matchingProfile.minBaseSalary,
+						excludedKeywords: [...matchingProfile.excludedKeywords]
 					}
 				: null,
+		creatingProfile,
 		activeDemoProfile:
 			hostedDemo && !locals.user ? toDemoProfileSummary(getDemoProfile(demoProfileId)) : null,
 		account: hostedDemo
 			? {
 					configured: isSupabaseConfigured(),
 					signedIn: Boolean(locals.user),
-					profileSaved: Boolean(locals.savedMatchProfile),
+					profileSaved: locals.savedMatchProfiles.length > 0,
+					profileCount: locals.savedMatchProfiles.length,
 					profileUnavailable: locals.savedMatchProfileUnavailable
 				}
 			: null,
@@ -111,21 +133,45 @@ export const actions: Actions = {
 		}
 		throw redirect(303, '/setup?saved=1');
 	},
-	saveAccountProfile: async ({ locals, request }) => {
+	saveAccountProfile: async ({ cookies, locals, request, url }) => {
 		if (!isHostedDemo()) return fail(403, { message: 'Account profiles are available online only.' });
 		if (!locals.supabase || !locals.user) {
 			return fail(401, { message: 'Sign in with Google before saving a profile.' });
 		}
 		const data = await request.formData();
-		const parsed = savedMatchProfileSchema.safeParse(matchingProfileFromForm(data));
+		const profileId = String(data.get('profileId') ?? '').trim() || null;
+		if (profileId && !locals.savedMatchProfiles.some((profile) => profile.id === profileId)) {
+			return fail(400, { message: 'Choose a valid saved profile.' });
+		}
+		const parsed = savedMatchProfileInputSchema.safeParse({
+			profileId,
+			name: String(data.get('profileName') ?? ''),
+			...matchingProfileFromForm(data)
+		});
 		if (!parsed.success) {
 			return fail(400, {
-				message: 'Add at least one target title, verified skill, and preferred focus area.'
+				message:
+					'Add a profile name plus at least one target title, verified skill, and preferred focus area.'
 			});
 		}
 		try {
-			await saveSavedMatchProfile(locals.supabase, locals.user.id, parsed.data);
-		} catch {
+			const saved = await saveSavedMatchProfile(locals.supabase, locals.user.id, parsed.data);
+			cookies.set(ACCOUNT_PROFILE_COOKIE, saved.id, {
+				path: '/',
+				httpOnly: true,
+				sameSite: 'lax',
+				secure: url.protocol === 'https:',
+				maxAge: 60 * 60 * 24 * 365
+			});
+		} catch (error) {
+			if (
+				typeof error === 'object' &&
+				error !== null &&
+				'code' in error &&
+				error.code === '23505'
+			) {
+				return fail(409, { message: 'Use a unique name for each profile.' });
+			}
 			return fail(503, { message: 'Your profile could not be saved right now. Please try again.' });
 		}
 		throw redirect(303, '/setup?saved=1');

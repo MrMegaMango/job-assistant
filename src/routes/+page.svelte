@@ -29,7 +29,7 @@
 {#if data.hostedDemo}
 	<div class="notice good">
 		{#if data.account?.profileSaved}
-			<strong>Your personalized matching is active.</strong>
+			<strong>{data.activeAccountProfile?.name ?? 'Your personalized profile'} matching is active.</strong>
 			Rankings use the private criteria saved to your account. <a href="/setup">Edit your profile</a>.
 		{:else if data.account?.signedIn}
 			<strong>Create your personalized profile.</strong>
@@ -40,7 +40,7 @@
 			<a href="/setup">See the verified criteria</a>.
 		{/if}
 	</div>
-	{#if !data.account?.signedIn && data.activeDemoProfile?.id === 'remote-async-ic'}
+	{#if (!data.account?.signedIn && data.activeDemoProfile?.id === 'remote-async-ic') || data.activeAccountProfile?.oeScreen}
 		<div class="notice">
 			<strong>Screening aid only.</strong>
 			A posting cannot establish that two jobs are compatible. Before pursuing one, review both
