@@ -13,7 +13,7 @@ import type {
 import { getDb } from './database';
 import { isHostedDemo } from './deployment';
 import { getListingAge, isRecentListing } from './listing-age';
-import { toHostedDemoProfile } from './profile';
+import { toHostedDemoProfile, type DemoProfileId } from './profile';
 import { scoreJob } from './scoring';
 
 type ProfileRow = {
@@ -183,10 +183,10 @@ function applicationFromRow(row: ApplicationRow): ApplicationRecord {
 	};
 }
 
-export function getProfile(): CandidateProfile {
+export function getProfile(demoProfileId?: DemoProfileId): CandidateProfile {
 	const row = getDb().prepare('SELECT * FROM profiles WHERE id = 1').get() as ProfileRow;
 	const profile = profileFromRow(row);
-	return isHostedDemo() ? toHostedDemoProfile(profile) : profile;
+	return isHostedDemo() ? toHostedDemoProfile(profile, demoProfileId) : profile;
 }
 
 export function saveProfile(profile: Omit<CandidateProfile, 'id' | 'updatedAt'>): CandidateProfile {
@@ -381,8 +381,9 @@ export function listRankedJobs(options: {
 	limit?: number;
 	includeRejected?: boolean;
 	now?: Date | number;
+	demoProfileId?: DemoProfileId;
 } = {}): RankedJob[] {
-	const profile = getProfile();
+	const profile = getProfile(options.demoProfileId);
 	const rows = getDb()
 		.prepare(`${JOB_SELECT} WHERE j.is_active = 1 ORDER BY j.last_seen_at DESC`)
 		.all() as JobRow[];
@@ -414,10 +415,10 @@ export function listRankedJobs(options: {
 		.slice(0, options.limit ?? 100);
 }
 
-export function getJob(id: number): RankedJob | null {
+export function getJob(id: number, demoProfileId?: DemoProfileId): RankedJob | null {
 	const row = getDb().prepare(`${JOB_SELECT} WHERE j.id = ?`).get(id) as JobRow | undefined;
 	if (!row) return null;
-	const profile = getProfile();
+	const profile = getProfile(demoProfileId);
 	const job = jobFromRow(row);
 	const listingAge = getListingAge(job.postedAt);
 	const match = scoreJob(profile, job);

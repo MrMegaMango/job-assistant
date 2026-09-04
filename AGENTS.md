@@ -8,3 +8,4 @@
 - Do not scrape or automate applications on LinkedIn or Indeed.
 - External application submission always requires a fresh, per-application user review. Never bypass CAPTCHAs, legal attestations, demographic questions, or typed signatures.
 - Run `npm run ci` after substantive changes.
+- After implementing and validating changes, deploy the intended changes to the configured Vercel production site and verify the live site before reporting completion. Never bundle unrelated working-tree changes into a deployment, and skip deployment only when the user explicitly requests local-only work or no deployment.

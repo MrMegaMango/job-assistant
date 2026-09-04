@@ -28,8 +28,8 @@
 
 {#if data.hostedDemo}
 	<div class="notice good">
-		<strong>Tailored matching is active.</strong> Rankings prioritize staff-level AI infrastructure,
-		backend/platform systems, model serving, retrieval and evaluation, performance, and cloud security.
+		<strong>{data.activeDemoProfile?.label ?? 'Anonymous'} matching is active.</strong>
+		{data.activeDemoProfile?.description ?? 'Rankings use non-identifying professional criteria.'}
 		<a href="/setup">See the verified criteria</a>.
 	</div>
 {:else if !data.profileComplete}

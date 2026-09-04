@@ -30,8 +30,23 @@
 
 {#if data.hostedDemo}
 	<div class="demo-banner">
-		<strong>Read-only hosted preview.</strong> Matches use a verified Staff AI/backend infrastructure profile.
-		Job data may reset; identity, resume, and application tracking stay local-only.
+		<div>
+			<strong>Anonymous hosted preview.</strong>
+			Matches use the {data.activeDemoProfile?.headline ?? 'selected professional profile'}.
+			Identity, resumes, and applications stay local-only.
+		</div>
+		<form method="POST" action="/api/demo-profile" class="demo-profile-switcher">
+			<input type="hidden" name="returnTo" value={data.returnTo} />
+			<label>
+				Match profile
+				<select name="profileId" value={data.activeDemoProfile?.id}>
+					{#each data.demoProfiles as profile}
+						<option value={profile.id}>{profile.label}</option>
+					{/each}
+				</select>
+			</label>
+			<button class="secondary" type="submit">Switch</button>
+		</form>
 	</div>
 {/if}
 

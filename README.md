@@ -42,13 +42,13 @@ Set `JOB_ASSISTANT_DATA_DIR` in `.env.local` only if you need a custom location.
 
 ## Optional hosted preview
 
-[View the hosted preview](https://high-match-job-assistant.vercel.app). It is a secondary, read-only view of the matching experience; the local app remains the product's focus.
+[View the hosted preview](https://high-match-job-assistant.vercel.app). It is a secondary, read-only view of the matching experience; the local app remains the product's focus. Visitors can switch among anonymous professional match profiles, and the non-identifying selection is remembered in that browser.
 
-Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable profile editing, shortlisting, application packets, and submission tracking. The hosted profile contains professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances; cold briefing and job-detail requests refresh their temporary job data when needed. This keeps the preview separate from the durable personal assistant.
+Vercel deployments automatically use a temporary SQLite database under `/tmp` and disable custom profile editing, shortlisting, application packets, and submission tracking. Hosted profiles contain professional matching criteria only; contact and resume fields are blank. Synced jobs can reset between requests or function instances; cold briefing and job-detail requests refresh their temporary job data when needed. This keeps the preview separate from the durable personal assistant.
 
 The production build constrains Vercel's dependency trace to the repository and then audits the generated bundle. The build fails and removes its output if it finds an external home-directory path, local database, credential file, resume, or application packet.
 
-A durable hosted version needs authenticated per-user access, hosted SQL storage, and private resume-file storage. The local version remains the complete MVP.
+A durable hosted version with custom saved profiles needs authenticated per-user access and encrypted hosted SQL storage; resume-backed application preparation also needs private file storage. The local version remains the complete MVP.
 
 ## Data-source policy
 

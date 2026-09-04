@@ -3,20 +3,22 @@ import type { Actions, PageServerLoad } from './$types';
 import { shortlist } from '$lib/server/applications';
 import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
 import { MAX_LISTING_AGE_DAYS } from '$lib/server/listing-age';
+import { DEMO_PROFILE_COOKIE, getSelectedDemoProfileId } from '$lib/server/profile';
 import { listRankedJobs, getProfile } from '$lib/server/store';
 import { syncEnabledSources } from '$lib/server/sync';
 
-export const load: PageServerLoad = ({ url }) => {
+export const load: PageServerLoad = ({ cookies, url }) => {
 	const now = new Date();
+	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
 	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 60);
 	const minimumScore = Number.isFinite(requestedMinimum)
 		? Math.min(95, Math.max(0, requestedMinimum))
 		: 60;
-	const jobs = listRankedJobs({ minimumScore, limit: 120, now }).map(({ description, ...job }) => ({
+	const jobs = listRankedJobs({ minimumScore, limit: 120, now, demoProfileId }).map(({ description, ...job }) => ({
 		...job,
 		excerpt: description.slice(0, 420)
 	}));
-	const profile = getProfile();
+	const profile = getProfile(demoProfileId);
 	return {
 		jobs,
 		minimumScore,

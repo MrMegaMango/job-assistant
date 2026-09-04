@@ -1,12 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { isHostedDemo } from '$lib/server/deployment';
 import { MAX_LISTING_AGE_DAYS } from '$lib/server/listing-age';
+import { DEMO_PROFILE_COOKIE, getSelectedDemoProfileId } from '$lib/server/profile';
 import { softwareDeveloperBenchmark } from '$lib/server/salary';
 import { listRankedJobs } from '$lib/server/store';
 import { ensureHostedJobs } from '$lib/server/sync';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ cookies, url }) => {
 	const generatedAt = new Date();
+	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
 	const requestedLimit = Number(url.searchParams.get('limit') ?? 10);
 	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 65);
 	const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(50, requestedLimit)) : 10;
@@ -14,7 +17,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		? Math.max(0, Math.min(95, requestedMinimum))
 		: 65;
 	await ensureHostedJobs();
-	const jobs = listRankedJobs({ limit, minimumScore, now: generatedAt }).map((job) => ({
+	const jobs = listRankedJobs({ limit, minimumScore, now: generatedAt, demoProfileId }).map((job) => ({
 		id: job.id,
 		company: job.company,
 		title: job.title,
@@ -35,6 +38,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	}));
 	return json({
 		generatedAt: generatedAt.toISOString(),
+		demoProfileId: isHostedDemo() ? demoProfileId : null,
 		minimumScore,
 		maximumListingAgeDays: MAX_LISTING_AGE_DAYS,
 		jobs

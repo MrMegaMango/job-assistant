@@ -15,8 +15,8 @@
 
 {#if data.hostedDemo}
 	<div class="notice">
-		This hosted preview uses a tailored professional profile while keeping identity, contact details,
-		resume files, and application data out of the deployment.
+		This hosted preview lets you switch among anonymous professional profiles while keeping identity,
+		contact details, resume files, and application data out of the deployment.
 	</div>
 {:else if data.saved}<div class="notice good">Profile saved. Future scores use this version.</div>{/if}
 {#if form?.message}<div class="notice bad">{form.message}</div>{/if}
@@ -28,7 +28,8 @@
 	<section class="panel stack" style="margin-top: 1rem">
 		<div>
 			<p class="eyebrow">Active match profile</p>
-			<h2>Staff AI and backend infrastructure engineer</h2>
+			<h2>{data.activeDemoProfile?.headline}</h2>
+			<p>{data.activeDemoProfile?.description}</p>
 			<p class="hint">Verified professional experience only. No private application identity is loaded.</p>
 		</div>
 		<div class="form-grid">
@@ -59,6 +60,17 @@
 			</div>
 		</div>
 		<a class="button secondary" href="/">Back to tailored matches</a>
+	</section>
+	<section class="panel stack" style="margin-top: 1rem">
+		<div>
+			<p class="eyebrow">Saved profiles</p>
+			<h2>Anonymous now, account sync later.</h2>
+			<p>
+				Your anonymous selection is remembered in this browser. Optional sign-in will require an
+				authentication provider plus encrypted hosted profile storage before it can safely save custom
+				profiles across devices.
+			</p>
+		</div>
 	</section>
 {/if}
 

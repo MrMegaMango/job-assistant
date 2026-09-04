@@ -8,6 +8,7 @@ import {
 	shortlist
 } from '$lib/server/applications';
 import { softwareDeveloperBenchmark } from '$lib/server/salary';
+import { DEMO_PROFILE_COOKIE, getSelectedDemoProfileId } from '$lib/server/profile';
 import { getApplicationForJob, getJob } from '$lib/server/store';
 import { ensureHostedJobs } from '$lib/server/sync';
 
@@ -17,12 +18,13 @@ function jobId(params: { id: string }): number {
 	return id;
 }
 
-export const load: PageServerLoad = async ({ params, url }) => {
+export const load: PageServerLoad = async ({ cookies, params, url }) => {
 	const id = jobId(params);
-	let job = getJob(id);
+	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
+	let job = getJob(id, demoProfileId);
 	if (!job && isHostedDemo()) {
 		await ensureHostedJobs();
-		job = getJob(id);
+		job = getJob(id, demoProfileId);
 	}
 	if (!job) throw error(404, 'Job not found.');
 	return {

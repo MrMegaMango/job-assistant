@@ -3,18 +3,26 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { RemotePreference } from '$lib/types';
 import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
-import { toPublicMatchProfile } from '$lib/server/profile';
+import {
+	DEMO_PROFILE_COOKIE,
+	getDemoProfile,
+	getSelectedDemoProfileId,
+	toDemoProfileSummary,
+	toPublicMatchProfile
+} from '$lib/server/profile';
 import { getProfile, saveProfile } from '$lib/server/store';
 import { runtimeFileExists } from '$lib/server/runtime-files';
 import { splitList } from '$lib/server/text';
 
-export const load: PageServerLoad = ({ url }) => {
-	const profile = getProfile();
+export const load: PageServerLoad = ({ cookies, url }) => {
 	const hostedDemo = isHostedDemo();
+	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
+	const profile = getProfile(demoProfileId);
 	return {
 		hostedDemo,
 		profile: hostedDemo ? null : profile,
 		publicProfile: hostedDemo ? toPublicMatchProfile(profile) : null,
+		activeDemoProfile: hostedDemo ? toDemoProfileSummary(getDemoProfile(demoProfileId)) : null,
 		resumeExists: hostedDemo ? false : Boolean(profile.resumePath && runtimeFileExists(profile.resumePath)),
 		saved: url.searchParams.get('saved') === '1'
 	};

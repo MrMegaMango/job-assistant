@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { CandidateProfile } from '$lib/types';
-import { TAILORED_MATCH_PROFILE, toHostedDemoProfile, toPublicMatchProfile } from './profile';
+import {
+	DEFAULT_DEMO_PROFILE_ID,
+	DEMO_MATCH_PROFILES,
+	TAILORED_MATCH_PROFILE,
+	getSelectedDemoProfileId,
+	listDemoProfiles,
+	toHostedDemoProfile,
+	toPublicMatchProfile
+} from './profile';
 
 const stored: CandidateProfile = {
 	id: 1,
@@ -27,6 +35,26 @@ describe('hosted tailored profile', () => {
 		expect(hosted.focusAreas).toEqual(TAILORED_MATCH_PROFILE.focusAreas);
 		expect(hosted.remotePreference).toBe('remote_preferred');
 		expect(JSON.stringify(hosted)).not.toContain('Private');
+	});
+
+	it('offers distinct anonymous profiles without leaking stored values', () => {
+		const profiles = listDemoProfiles();
+		expect(profiles).toHaveLength(4);
+		expect(new Set(profiles.map((profile) => profile.updatedAt)).size).toBe(profiles.length);
+
+		for (const profile of profiles) {
+			const hosted = toHostedDemoProfile(stored, profile.id);
+			expect(hosted.targetTitles).toEqual(DEMO_MATCH_PROFILES[profile.id].criteria.targetTitles);
+			expect(hosted.updatedAt).toBe(profile.updatedAt);
+			expect(JSON.stringify(hosted)).not.toContain('Private');
+			expect(hosted).toMatchObject({ name: '', email: '', phone: '', resumePath: '' });
+		}
+	});
+
+	it('falls back safely when an anonymous-profile cookie is missing or invalid', () => {
+		expect(getSelectedDemoProfileId(undefined)).toBe(DEFAULT_DEMO_PROFILE_ID);
+		expect(getSelectedDemoProfileId('not-a-profile')).toBe(DEFAULT_DEMO_PROFILE_ID);
+		expect(getSelectedDemoProfileId('backend-platform')).toBe('backend-platform');
 	});
 
 	it('serializes only matching criteria for public pages', () => {
