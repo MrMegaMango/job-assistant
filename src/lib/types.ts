@@ -65,6 +65,12 @@ export interface StoredJob extends NormalizedJob {
 	isActive: boolean;
 }
 
+export interface ListingAge {
+	days: number;
+	label: string;
+	postedAt: string;
+}
+
 export interface MatchComponents {
 	title: number;
 	skills: number;
@@ -88,6 +94,7 @@ export interface MatchResult {
 
 export interface RankedJob extends StoredJob {
 	match: MatchResult;
+	listingAge: ListingAge | null;
 	applicationState: ApplicationState | null;
 }
 

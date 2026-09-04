@@ -12,6 +12,7 @@ import type {
 } from '$lib/types';
 import { getDb } from './database';
 import { isHostedDemo } from './deployment';
+import { getListingAge, isRecentListing } from './listing-age';
 import { toHostedDemoProfile } from './profile';
 import { scoreJob } from './scoring';
 
@@ -341,17 +342,28 @@ export function listRankedJobs(options: {
 	minimumScore?: number;
 	limit?: number;
 	includeRejected?: boolean;
+	now?: Date | number;
 } = {}): RankedJob[] {
 	const profile = getProfile();
 	const rows = getDb()
 		.prepare(`${JOB_SELECT} WHERE j.is_active = 1 ORDER BY j.last_seen_at DESC`)
 		.all() as JobRow[];
 	const minimumScore = options.minimumScore ?? 35;
-	const ranked = rows.map((row) => {
+	const ranked = rows.flatMap((row) => {
 		const job = jobFromRow(row);
+		if (!job.remote) return [];
+		const listingAge = getListingAge(job.postedAt, options.now);
+		if (!isRecentListing(listingAge)) return [];
 		const match = scoreJob(profile, job);
 		cacheMatch(job, profile, match);
-		return { ...job, match, applicationState: isHostedDemo() ? null : (row.application_state ?? null) };
+		return [
+			{
+				...job,
+				match,
+				listingAge,
+				applicationState: isHostedDemo() ? null : (row.application_state ?? null)
+			}
+		];
 	});
 	return ranked
 		.filter((job) => (options.includeRejected ? true : !job.match.hardRejected))
@@ -365,9 +377,15 @@ export function getJob(id: number): RankedJob | null {
 	if (!row) return null;
 	const profile = getProfile();
 	const job = jobFromRow(row);
+	const listingAge = getListingAge(job.postedAt);
 	const match = scoreJob(profile, job);
 	cacheMatch(job, profile, match);
-	return { ...job, match, applicationState: isHostedDemo() ? null : (row.application_state ?? null) };
+	return {
+		...job,
+		match,
+		listingAge,
+		applicationState: isHostedDemo() ? null : (row.application_state ?? null)
+	};
 }
 
 export function getApplicationForJob(jobId: number): ApplicationRecord | null {
@@ -401,6 +419,13 @@ export function getStats(): { activeJobs: number; jobsWithPostedPay: number } {
 		`)
 		.get() as { active_jobs: number; jobs_with_posted_pay: number | null };
 	return { activeJobs: row.active_jobs, jobsWithPostedPay: row.jobs_with_posted_pay ?? 0 };
+}
+
+export function hasRecentActiveRemoteJobs(now: Date | number = Date.now()): boolean {
+	const rows = getDb()
+		.prepare('SELECT posted_at FROM jobs WHERE is_active = 1 AND remote = 1')
+		.all() as Array<{ posted_at: string | null }>;
+	return rows.some((row) => isRecentListing(getListingAge(row.posted_at, now)));
 }
 
 export function audit(eventType: string, entityType: string, entityId: number | null, metadata: unknown): void {

@@ -55,13 +55,15 @@
 		</label>
 		<button class="secondary" type="submit">Filter</button>
 	</form>
-	<span class="hint">Showing {data.jobs.length} ranked remote jobs</span>
+	<span class="hint">
+		Showing {data.jobs.length} ranked remote jobs from the last {data.maximumListingAgeDays} days
+	</span>
 </section>
 
 {#if data.jobs.length === 0}
 	<section class="panel empty">
-		<h2>No remote matches loaded yet</h2>
-		<p>Sync the enabled public ATS sources to build your first ranked remote briefing.</p>
+		<h2>No fresh remote matches found</h2>
+		<p>Sync the enabled public ATS sources to look for jobs posted in the last {data.maximumListingAgeDays} days.</p>
 		<SyncControl label="Load remote job matches" busyLabel="Building your briefing…" />
 	</section>
 {:else}
@@ -75,6 +77,9 @@
 						<div class="meta">
 							<span>{job.location || 'Location not listed'}</span>
 							<span>{job.sourceProvider}</span>
+							{#if job.listingAge}
+								<time class="badge" datetime={job.listingAge.postedAt}>{job.listingAge.label}</time>
+							{/if}
 							{#if job.remote}<span class="badge good">Remote</span>{/if}
 						</div>
 					</div>

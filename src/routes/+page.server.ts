@@ -2,15 +2,17 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { shortlist } from '$lib/server/applications';
 import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
+import { MAX_LISTING_AGE_DAYS } from '$lib/server/listing-age';
 import { listRankedJobs, getProfile } from '$lib/server/store';
 import { syncEnabledSources } from '$lib/server/sync';
 
 export const load: PageServerLoad = ({ url }) => {
+	const now = new Date();
 	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 60);
 	const minimumScore = Number.isFinite(requestedMinimum)
 		? Math.min(95, Math.max(0, requestedMinimum))
 		: 60;
-	const jobs = listRankedJobs({ minimumScore, limit: 120 }).map(({ description, ...job }) => ({
+	const jobs = listRankedJobs({ minimumScore, limit: 120, now }).map(({ description, ...job }) => ({
 		...job,
 		excerpt: description.slice(0, 420)
 	}));
@@ -18,6 +20,7 @@ export const load: PageServerLoad = ({ url }) => {
 	return {
 		jobs,
 		minimumScore,
+		maximumListingAgeDays: MAX_LISTING_AGE_DAYS,
 		profileComplete: Boolean(profile.name && profile.email && profile.phone && profile.resumePath)
 	};
 };

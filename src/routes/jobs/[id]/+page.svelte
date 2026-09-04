@@ -28,6 +28,11 @@
 		<div class="meta">
 			<span>{data.job.location || 'Location not listed'}</span>
 			<span>{data.job.sourceProvider}</span>
+			{#if data.job.listingAge}
+				<time class="badge" datetime={data.job.listingAge.postedAt}>{data.job.listingAge.label}</time>
+			{:else}
+				<span class="badge warn">Posting date unavailable</span>
+			{/if}
 			{#if data.job.remote}<span class="badge good">Remote</span>{/if}
 			{#if data.application}<span class="badge good">{data.application.state.replaceAll('_', ' ')}</span>{/if}
 		</div>

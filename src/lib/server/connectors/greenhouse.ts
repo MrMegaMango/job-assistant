@@ -12,6 +12,7 @@ const greenhouseResponse = z.object({
 			content: z.string().default(''),
 			absolute_url: z.string().url(),
 			location: z.object({ name: z.string().default('') }).default({ name: '' }),
+			first_published: z.string().nullable().optional(),
 			updated_at: z.string().nullable().optional()
 		})
 	)
@@ -34,7 +35,7 @@ export async function fetchGreenhouse(source: JobSource): Promise<NormalizedJob[
 			description,
 			canonicalUrl: job.absolute_url,
 			applyUrl: job.absolute_url,
-			postedAt: null,
+			postedAt: job.first_published ?? null,
 			updatedAt: job.updated_at ?? null,
 			salary: extractPostedSalary(description, job.absolute_url)
 		};

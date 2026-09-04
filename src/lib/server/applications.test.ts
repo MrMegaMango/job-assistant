@@ -44,7 +44,11 @@ async function seedJob(): Promise<number> {
 	const store = await import('./store');
 	const source = store.listSources()[0];
 	store.upsertSourceJobs(source, [fixtureJob]);
-	const job = store.listRankedJobs({ minimumScore: 0, limit: 1 })[0];
+	const job = store.listRankedJobs({
+		minimumScore: 0,
+		limit: 1,
+		now: new Date('2026-08-26T00:00:00.000Z')
+	})[0];
 	if (!job) throw new Error('Fixture job was not created.');
 	return job.id;
 }

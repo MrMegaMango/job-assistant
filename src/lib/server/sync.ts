@@ -1,7 +1,7 @@
 import type { JobSource } from '$lib/types';
 import { fetchSource } from './connectors';
 import { isHostedDemo } from './deployment';
-import { getStats, listSources, recordSourceFailure, upsertSourceJobs } from './store';
+import { hasRecentActiveRemoteJobs, listSources, recordSourceFailure, upsertSourceJobs } from './store';
 
 export interface SyncResult {
 	source: string;
@@ -11,8 +11,17 @@ export interface SyncResult {
 
 const SYNC_BATCH_SIZE = 6;
 const HOSTED_SYNC_COOLDOWN_MS = 5 * 60 * 1000;
+const HOSTED_EMPTY_REFRESH_BACKOFF_MS = 30 * 60 * 1000;
 let hostedSyncStartedAt = 0;
 let hostedSyncInFlight: Promise<SyncResult[]> | null = null;
+
+function hasRecentSourceSync(sources: JobSource[], now: number): boolean {
+	return sources.some((source) => {
+		if (!source.enabled || !source.lastSyncedAt) return false;
+		const syncedAt = Date.parse(source.lastSyncedAt);
+		return Number.isFinite(syncedAt) && syncedAt <= now && now - syncedAt < HOSTED_EMPTY_REFRESH_BACKOFF_MS;
+	});
+}
 
 async function syncOne(source: JobSource): Promise<SyncResult> {
 	try {
@@ -59,5 +68,8 @@ export async function syncEnabledSources(): Promise<SyncResult[]> {
 }
 
 export async function ensureHostedJobs(): Promise<void> {
-	if (isHostedDemo() && getStats().activeJobs === 0) await syncEnabledSources();
+	if (!isHostedDemo() || hasRecentActiveRemoteJobs()) return;
+	const now = Date.now();
+	if (hasRecentSourceSync(listSources(), now)) return;
+	await syncEnabledSources();
 }
