@@ -2,11 +2,23 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
 import { SOURCE_POLICY_URLS } from '$lib/server/source-catalog';
+import {
+	getCompanyLeadership,
+	LEADERSHIP_RESEARCHED_AT,
+	SURNAME_CONTEXT
+} from '$lib/server/company-leadership';
 import { parseBoardInput } from '$lib/server/source-input';
 import { addSource, listSources, setSourceEnabled } from '$lib/server/store';
 import { syncEnabledSources } from '$lib/server/sync';
 
-export const load: PageServerLoad = () => ({ sources: listSources() });
+export const load: PageServerLoad = () => ({
+	sources: listSources().map((source) => ({
+		...source,
+		leadership: getCompanyLeadership(source.name)
+	})),
+	leadershipResearchedAt: LEADERSHIP_RESEARCHED_AT,
+	surnameContext: SURNAME_CONTEXT
+});
 
 export const actions: Actions = {
 	toggle: async ({ request }) => {

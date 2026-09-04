@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SyncControl from '$lib/components/SyncControl.svelte';
 	import SyncResults from '$lib/components/SyncResults.svelte';
+	import LeadershipSurnameNote from '$lib/components/LeadershipSurnameNote.svelte';
 
 	let { data, form } = $props();
 </script>
@@ -11,7 +12,7 @@
 		<h1>Employer-origin jobs, not scraped feeds.</h1>
 		<p class="lede">
 			{data.sources.length} validated company boards are ready across Greenhouse, Ashby, and Lever.
-			Each record keeps its canonical source and application URL.
+			Each record keeps its canonical source, application URL, and cited leadership surname notes.
 		</p>
 	</div>
 	<SyncControl label="Sync enabled" busyLabel="Checking enabled sources…" />
@@ -35,6 +36,13 @@
 				{#if source.lastSyncedAt}<p class="hint">Last synced {new Date(source.lastSyncedAt).toLocaleString()}</p>{/if}
 				{#if source.lastError}<p class="notice bad">{source.lastError}</p>{/if}
 				<a href={source.policyUrl} target="_blank" rel="noreferrer">Official API policy</a>
+				{#if source.leadership}
+					<LeadershipSurnameNote
+						leadership={source.leadership}
+						researchedAt={data.leadershipResearchedAt}
+						context={data.surnameContext}
+					/>
+				{/if}
 			</div>
 			{#if data.hostedDemo}
 				<span class="badge warn">Fixed in preview</span>

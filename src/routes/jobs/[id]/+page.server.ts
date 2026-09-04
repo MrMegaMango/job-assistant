@@ -2,6 +2,11 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
 import {
+	getCompanyLeadership,
+	LEADERSHIP_RESEARCHED_AT,
+	SURNAME_CONTEXT
+} from '$lib/server/company-leadership';
+import {
 	approveAndConsumeForOpen,
 	confirmSubmitted,
 	prepareApplication,
@@ -29,6 +34,9 @@ export const load: PageServerLoad = async ({ cookies, locals, params, url }) => 
 	if (!job) throw error(404, 'Job not found.');
 	return {
 		job,
+		leadership: getCompanyLeadership(job.company),
+		leadershipResearchedAt: LEADERSHIP_RESEARCHED_AT,
+		surnameContext: SURNAME_CONTEXT,
 		application: getApplicationForJob(id),
 		benchmark: job.salary ? null : softwareDeveloperBenchmark(job.title),
 		prepared: url.searchParams.get('prepared') === '1',

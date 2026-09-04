@@ -1,4 +1,6 @@
 <script lang="ts">
+	import LeadershipSurnameNote from '$lib/components/LeadershipSurnameNote.svelte';
+
 	let { data, form } = $props();
 	const componentMaximums: Record<string, number> = {
 		title: 25,
@@ -82,6 +84,18 @@
 	</div>
 
 	<aside class="stack sticky">
+		{#if data.leadership}
+			<section class="panel">
+				<p class="eyebrow">Company context</p>
+				<LeadershipSurnameNote
+					leadership={data.leadership}
+					researchedAt={data.leadershipResearchedAt}
+					context={data.surnameContext}
+					open
+				/>
+			</section>
+		{/if}
+
 		<section class="panel">
 			<p class="eyebrow">Compensation</p>
 			{#if data.job.salary}

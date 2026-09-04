@@ -518,6 +518,84 @@ ul.clean {
 	gap: 1rem;
 }
 
+.source-row {
+	align-items: start;
+}
+
+.leadership-details {
+	margin-top: 1rem;
+	border-top: 1px solid var(--line);
+}
+
+.leadership-details summary {
+	padding-top: 0.85rem;
+	color: var(--green);
+	font-weight: 800;
+	cursor: pointer;
+}
+
+.leadership-summary-people {
+	display: block;
+	margin-top: 0.35rem;
+	color: var(--text);
+	font-size: 0.86rem;
+	font-weight: 650;
+	line-height: 1.45;
+}
+
+.leadership-content {
+	padding: 0.85rem 0 0.15rem;
+}
+
+.surname-context {
+	margin-bottom: 0.45rem;
+	padding: 0.75rem;
+	border-left: 3px solid var(--blue);
+	border-radius: 0.35rem;
+	background: #edf3f5;
+	color: #294b5d;
+	font-size: 0.86rem;
+	line-height: 1.45;
+}
+
+.leadership-list {
+	display: grid;
+	gap: 0.65rem;
+	margin: 0.85rem 0;
+}
+
+.leadership-person {
+	padding: 0.75rem;
+	border: 1px solid var(--line);
+	border-radius: 0.65rem;
+	background: #faf9f4;
+}
+
+.leadership-person p {
+	margin: 0.55rem 0 0;
+	font-size: 0.9rem;
+	line-height: 1.45;
+}
+
+.leadership-person-heading,
+.leadership-links {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.45rem 0.75rem;
+}
+
+.leadership-links {
+	margin-top: 0.55rem;
+	font-size: 0.82rem;
+}
+
+.leadership-note.notice {
+	margin: 0.75rem 0;
+	padding: 0.75rem;
+	font-size: 0.86rem;
+}
+
 code {
 	padding: 0.1rem 0.3rem;
 	border-radius: 0.3rem;
