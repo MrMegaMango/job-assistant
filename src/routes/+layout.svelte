@@ -23,6 +23,7 @@
 	<nav aria-label="Primary navigation">
 		<a href="/">Matches</a>
 		<a href="/applications">Applications <span class="count">{data.applicationCount}</span></a>
+		<a href="/companies">Companies</a>
 		<a href="/sources">Sources <span class="count">{data.enabledSourceCount}</span></a>
 		<a href="/setup" class:attention={!data.profileReady}>Setup</a>
 	</nav>
@@ -98,3 +99,10 @@
 		<a href="/api/health">System status</a>
 	</div>
 </footer>
+
+<style>
+	nav { flex-wrap: wrap; }
+	@media (max-width: 800px) {
+		nav { justify-content: flex-start; gap: 0.2rem 0.65rem; }
+	}
+</style>

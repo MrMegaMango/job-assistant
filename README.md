@@ -6,7 +6,8 @@ The complete product is the durable local workflow: personal preferences and app
 
 ## What works in the MVP
 
-- Sync more than 90 validated public Greenhouse, Ashby, and Lever company boards plus We Work Remotely's public engineering RSS feeds without login credentials.
+- Sync 190 validated public sources across Greenhouse, Ashby, Lever, and We Work Remotely's engineering RSS feed without login credentials.
+- Browse a searchable $300K+ company directory across all job families, with cited Levels.fyi compensation evidence, job-feed coverage, and visible research gaps. See [coverage methodology](docs/levels-company-coverage.md); this is a verified public snapshot, not an exhaustive copy of Levels.fyi.
 - Rank jobs with explainable title, verified-skill, domain-focus, seniority, location, and compensation components.
 - Show employer-posted salary ranges when provided and clearly label a broad BLS benchmark when pay is missing.
 - Shortlist or dismiss jobs and generate an application review packet from verified profile facts.
@@ -25,7 +26,7 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`, review the profile under **Setup**, then choose **Sync jobs**. More than 90 validated public boards are enabled by default across AI labs, infrastructure, developer tools, security, fintech, and large technology employers. They can be enabled or disabled under **Sources**, and additional Greenhouse, Ashby, or Lever board URLs can be pasted directly without changing code.
+Open `http://127.0.0.1:5173`, review the profile under **Setup**, then choose **Sync jobs**. 190 validated public sources are enabled by default across AI labs, infrastructure, developer tools, security, fintech, and large technology employers. They can be enabled or disabled under **Sources**, and additional Greenhouse, Ashby, or Lever board URLs can be pasted directly without changing code.
 
 Preview the production build locally:
 

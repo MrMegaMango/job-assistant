@@ -3,14 +3,21 @@ import { COMPANY_LEADERSHIP, getCompanyLeadership } from './company-leadership';
 import { DEFAULT_SOURCES } from './source-catalog';
 
 describe('company leadership research', () => {
-	it('covers every default employer company exactly once', () => {
+	it('keeps curated research unique and leaves unresearched employers unknown', () => {
 		const catalogCompanies = DEFAULT_SOURCES.filter((source) => source.provider !== 'wwr')
 			.map((source) => source.name)
 			.sort();
 		const researchedCompanies = COMPANY_LEADERSHIP.map((entry) => entry.company).sort();
 
 		expect(new Set(researchedCompanies).size).toBe(researchedCompanies.length);
-		expect(researchedCompanies).toEqual(catalogCompanies);
+		expect(researchedCompanies.length).toBeGreaterThanOrEqual(94);
+		for (const company of researchedCompanies) {
+			expect(catalogCompanies).toContain(company);
+			expect(getCompanyLeadership(company)?.company).toBe(company);
+		}
+		for (const company of catalogCompanies.filter((name) => !researchedCompanies.includes(name))) {
+			expect(getCompanyLeadership(company)).toBeNull();
+		}
 	});
 
 	it('records an executive role, a surname result, and a CTO result for every company', () => {
