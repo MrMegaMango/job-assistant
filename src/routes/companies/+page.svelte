@@ -47,6 +47,10 @@
 			Reported compensation is historical, not an advertised job salary. Openings may be remote,
 			hybrid, or on-site, and pay varies by role and location.
 		</p>
+		<p class="hint" style="margin: 1rem 0 0; line-height: 1.5">
+			Looking for companies beyond this directory?
+			<a href="/discover">Search live openings and recent funding news →</a>
+		</p>
 	</div>
 </section>
 

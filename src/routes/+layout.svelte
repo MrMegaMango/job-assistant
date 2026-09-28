@@ -24,6 +24,7 @@
 		<a href="/">Matches</a>
 		<a href="/applications">Applications <span class="count">{data.applicationCount}</span></a>
 		<a href="/companies">Companies</a>
+		<a href="/discover">Discover</a>
 		<a href="/sources">Sources <span class="count">{data.enabledSourceCount}</span></a>
 		<a href="/setup" class:attention={!data.profileReady}>Setup</a>
 	</nav>

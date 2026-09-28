@@ -62,6 +62,23 @@ Resume-backed application preparation still requires private file storage and st
 
 ## Data-source policy
 
+### Live company discovery
+
+The **Discover** page supplements the company directory with on-demand searches of
+[Startup Jobs](https://startup.jobs/mcp) and [Himalayas](https://himalayas.app/api).
+It also reads recent TechCrunch and Crunchbase News funding reports and checks up to two
+newly reported employers for indexed openings. No API key is required. Only the editable
+role/topic and country are sent to job-search providers; matching runs on the server.
+
+Results retain provider attribution, distinguish employers outside the directory, and
+show funding separately from candidate-fit scores. News dates are publication dates,
+not verified round-closing dates. Listings and name-matched funding reports need employer
+confirmation. Funding hiring counts include the sampled company's roles across locations;
+role cards use the selected country and remote criteria. The search is a bounded sample,
+not exhaustive coverage: Startup Jobs searches recent listings, Himalayas refreshes daily,
+and funding feeds include only their latest articles. Provider failures are shown explicitly.
+Searches do not change the catalog, saved profiles, or existing job snapshots.
+
 The built-in connectors use official public job-posting APIs:
 
 - [Greenhouse Job Board API](https://developer.greenhouse.io/job-board.html)
