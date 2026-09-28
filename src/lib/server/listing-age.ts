@@ -35,3 +35,11 @@ export function getListingAge(
 export function isRecentListing(age: ListingAge | null): age is ListingAge {
 	return age !== null && age.days < MAX_LISTING_AGE_DAYS;
 }
+
+/** The hosted preview keeps only remote jobs inside the listing-age window. */
+export function freshRemoteJobs<T extends { remote: boolean; postedAt: string | null }>(
+	jobs: T[],
+	now: number
+): T[] {
+	return jobs.filter((job) => job.remote && isRecentListing(getListingAge(job.postedAt, now)));
+}

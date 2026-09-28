@@ -1,7 +1,8 @@
 import type { JobSource } from '$lib/types';
 import { fetchSource } from './connectors';
 import { isHostedDemo } from './deployment';
-import { getListingAge, isRecentListing } from './listing-age';
+import { fetchJobsSnapshot } from './jobs-snapshot';
+import { freshRemoteJobs } from './listing-age';
 import { hasRecentActiveRemoteJobs, listSources, recordSourceFailure, upsertSourceJobs } from './store';
 
 export interface SyncResult {
@@ -13,6 +14,7 @@ export interface SyncResult {
 const SYNC_CONCURRENCY = 12;
 const HOSTED_EMPTY_REFRESH_BACKOFF_MS = 30 * 60 * 1000;
 let hostedSyncInFlight: Promise<SyncResult[]> | null = null;
+let hostedSnapshotInFlight: Promise<SyncResult[]> | null = null;
 
 function hasRecentSourceSync(sources: JobSource[], now: number): boolean {
 	return sources.some((source) => {
@@ -25,9 +27,7 @@ function hasRecentSourceSync(sources: JobSource[], now: number): boolean {
 async function syncOne(source: JobSource, now: number, hosted: boolean): Promise<SyncResult> {
 	try {
 		const jobs = await fetchSource(source);
-		const persistedJobs = hosted
-			? jobs.filter((job) => job.remote && isRecentListing(getListingAge(job.postedAt, now)))
-			: jobs;
+		const persistedJobs = hosted ? freshRemoteJobs(jobs, now) : jobs;
 		return { source: source.name, count: upsertSourceJobs(source, persistedJobs), error: null };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown source error';
@@ -68,9 +68,39 @@ export async function syncEnabledSources(): Promise<SyncResult[]> {
 	}
 }
 
+/** Load the published nightly snapshot into the hosted preview's temporary database. */
+async function loadJobsSnapshot(): Promise<SyncResult[]> {
+	const snapshot = await fetchJobsSnapshot();
+	const now = Date.now();
+	const published = new Map(
+		snapshot.sources.map((entry) => [`${entry.provider}:${entry.boardToken}`, entry])
+	);
+	return listSources()
+		.filter((source) => source.enabled)
+		.flatMap((source): SyncResult[] => {
+			const entry = published.get(`${source.provider}:${source.boardToken}`);
+			if (!entry) return [];
+			if (entry.error) {
+				recordSourceFailure(source.id, entry.error);
+				return [{ source: source.name, count: 0, error: entry.error }];
+			}
+			const count = upsertSourceJobs(source, freshRemoteJobs(entry.jobs, now));
+			return [{ source: source.name, count, error: null }];
+		});
+}
+
 export async function ensureHostedJobs(): Promise<void> {
 	if (!isHostedDemo() || hasRecentActiveRemoteJobs()) return;
 	const now = Date.now();
 	if (hasRecentSourceSync(listSources(), now)) return;
+	hostedSnapshotInFlight ??= loadJobsSnapshot().finally(() => {
+		hostedSnapshotInFlight = null;
+	});
+	try {
+		await hostedSnapshotInFlight;
+		return;
+	} catch {
+		// Only an unavailable or invalid snapshot makes the preview fetch every source itself.
+	}
 	await syncEnabledSources();
 }

@@ -5,9 +5,11 @@ import { HOSTED_DEMO_MESSAGE, isHostedDemo } from '$lib/server/deployment';
 import { MAX_LISTING_AGE_DAYS } from '$lib/server/listing-age';
 import { DEMO_PROFILE_COOKIE, getSelectedDemoProfileId } from '$lib/server/profile';
 import { listRankedJobs, getProfile } from '$lib/server/store';
-import { syncEnabledSources } from '$lib/server/sync';
+import { ensureHostedJobs, syncEnabledSources } from '$lib/server/sync';
 
-export const load: PageServerLoad = ({ cookies, locals, url }) => {
+export const load: PageServerLoad = async ({ cookies, locals, url }) => {
+	// A cold hosted instance loads the published nightly snapshot; local use is unaffected.
+	await ensureHostedJobs();
 	const now = new Date();
 	const demoProfileId = getSelectedDemoProfileId(cookies.get(DEMO_PROFILE_COOKIE));
 	const requestedMinimum = Number(url.searchParams.get('minimumScore') ?? 60);

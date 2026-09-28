@@ -3,6 +3,7 @@ import type { JobSource, NormalizedJob } from '$lib/types';
 
 const mocks = vi.hoisted(() => ({
 	fetchSource: vi.fn(),
+	fetchJobsSnapshot: vi.fn(),
 	isHostedDemo: vi.fn(),
 	hasRecentActiveRemoteJobs: vi.fn(),
 	listSources: vi.fn(),
@@ -11,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('./connectors', () => ({ fetchSource: mocks.fetchSource }));
+vi.mock('./jobs-snapshot', () => ({ fetchJobsSnapshot: mocks.fetchJobsSnapshot }));
 vi.mock('./deployment', () => ({ isHostedDemo: mocks.isHostedDemo }));
 vi.mock('./store', () => ({
 	hasRecentActiveRemoteJobs: mocks.hasRecentActiveRemoteJobs,
@@ -192,5 +194,76 @@ describe('source sync', () => {
 		{ source: good.name, count: 1, error: null },
 		{ source: empty.name, count: 0, error: null }
 		]);
+	});
+});
+
+describe('hosted cold start', () => {
+	function snapshot(entry: { error?: string | null; jobs?: NormalizedJob[] } = {}) {
+		return {
+			version: 1,
+			generatedAt: new Date(SYNC_NOW).toISOString(),
+			sources: [
+				{
+					provider: source.provider,
+					boardToken: source.boardToken,
+					name: source.name,
+					error: entry.error ?? null,
+					jobs: entry.jobs ?? mixedJobs()
+				}
+			]
+		};
+	}
+
+	it('loads the published snapshot instead of fetching every source', async () => {
+		mocks.fetchJobsSnapshot.mockResolvedValue(snapshot());
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+
+		expect(mocks.fetchSource).not.toHaveBeenCalled();
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledWith(source, mixedJobs().slice(0, 2));
+	});
+
+	it('records a source the nightly sync could not reach without fetching it from the preview', async () => {
+		mocks.fetchJobsSnapshot.mockResolvedValue(snapshot({ error: 'Source returned HTTP 503.', jobs: [] }));
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+
+		expect(mocks.recordSourceFailure).toHaveBeenCalledWith(source.id, 'Source returned HTTP 503.');
+		expect(mocks.upsertSourceJobs).not.toHaveBeenCalled();
+		expect(mocks.fetchSource).not.toHaveBeenCalled();
+	});
+
+	it('syncs sources itself only when the snapshot is unavailable', async () => {
+		mocks.fetchJobsSnapshot.mockRejectedValue(new Error('Source returned HTTP 404.'));
+		mocks.fetchSource.mockResolvedValue([freshJob]);
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+
+		expect(mocks.fetchSource).toHaveBeenCalledWith(source);
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledWith(source, [freshJob]);
+	});
+
+	it('shares one snapshot load across concurrent cold requests', async () => {
+		mocks.fetchJobsSnapshot.mockResolvedValue(snapshot());
+		const { ensureHostedJobs } = await import('./sync');
+
+		await Promise.all([ensureHostedJobs(), ensureHostedJobs()]);
+
+		expect(mocks.fetchJobsSnapshot).toHaveBeenCalledTimes(1);
+	});
+
+	it('does nothing locally or when recent jobs are already loaded', async () => {
+		const { ensureHostedJobs } = await import('./sync');
+		mocks.hasRecentActiveRemoteJobs.mockReturnValue(true);
+		await ensureHostedJobs();
+		mocks.hasRecentActiveRemoteJobs.mockReturnValue(false);
+		mocks.isHostedDemo.mockReturnValue(false);
+		await ensureHostedJobs();
+
+		expect(mocks.fetchJobsSnapshot).not.toHaveBeenCalled();
+		expect(mocks.fetchSource).not.toHaveBeenCalled();
 	});
 });
