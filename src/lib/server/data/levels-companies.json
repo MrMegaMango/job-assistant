@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-21",
+  "checkedAt": "2026-09-29",
   "discoveredCompanies": 65028,
-  "checkedCompanies": 260,
+  "checkedCompanies": 261,
   "failedCompanies": 18321,
   "companies": [
     {
@@ -1807,6 +1807,17 @@
       "location": null,
       "sourceUpdatedAt": null,
       "sourceKey": "greenhouse:reddit"
+    },
+    {
+      "slug": "redfin",
+      "name": "Redfin",
+      "levelsUrl": "https://www.levels.fyi/companies/redfin/salaries/software-engineer/levels/tech-lead",
+      "reportedAnnualUsd": 336730,
+      "role": "Software Engineer",
+      "level": "Tech Lead",
+      "location": "United States",
+      "sourceUpdatedAt": null,
+      "sourceKey": null
     },
     {
       "slug": "reltio",
