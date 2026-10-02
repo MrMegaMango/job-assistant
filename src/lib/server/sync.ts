@@ -1,6 +1,8 @@
 import type { JobSource } from '$lib/types';
 import { fetchSource } from './connectors';
 import { isHostedDemo } from './deployment';
+import { fetchJobsSnapshot } from './jobs-snapshot';
+import { freshRemoteJobs } from './listing-age';
 import { hasRecentActiveRemoteJobs, listSources, recordSourceFailure, upsertSourceJobs } from './store';
 
 export interface SyncResult {
@@ -9,9 +11,12 @@ export interface SyncResult {
 	error: string | null;
 }
 
-const SYNC_BATCH_SIZE = 6;
+const SYNC_CONCURRENCY = 12;
 const HOSTED_EMPTY_REFRESH_BACKOFF_MS = 30 * 60 * 1000;
+// Match the local scheduler's forced refresh age before relying on live employer feeds.
+const HOSTED_SNAPSHOT_MAX_AGE_MS = 36 * 60 * 60 * 1000;
 let hostedSyncInFlight: Promise<SyncResult[]> | null = null;
+let hostedSnapshotInFlight: Promise<SyncResult[]> | null = null;
 
 function hasRecentSourceSync(sources: JobSource[], now: number): boolean {
 	return sources.some((source) => {
@@ -21,10 +26,11 @@ function hasRecentSourceSync(sources: JobSource[], now: number): boolean {
 	});
 }
 
-async function syncOne(source: JobSource): Promise<SyncResult> {
+async function syncOne(source: JobSource, now: number, hosted: boolean): Promise<SyncResult> {
 	try {
 		const jobs = await fetchSource(source);
-		return { source: source.name, count: upsertSourceJobs(source, jobs), error: null };
+		const persistedJobs = hosted ? freshRemoteJobs(jobs, now) : jobs;
+		return { source: source.name, count: upsertSourceJobs(source, persistedJobs), error: null };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown source error';
 		recordSourceFailure(source.id, message);
@@ -34,10 +40,21 @@ async function syncOne(source: JobSource): Promise<SyncResult> {
 
 async function runSync(): Promise<SyncResult[]> {
 	const sources = listSources().filter((source) => source.enabled);
-	const results: SyncResult[] = [];
-	for (let index = 0; index < sources.length; index += SYNC_BATCH_SIZE) {
-		results.push(...(await Promise.all(sources.slice(index, index + SYNC_BATCH_SIZE).map(syncOne))));
+	const results = new Array<SyncResult>(sources.length);
+	const now = Date.now();
+	const hosted = isHostedDemo();
+	let nextIndex = 0;
+
+	async function worker(): Promise<void> {
+		while (nextIndex < sources.length) {
+			const index = nextIndex++;
+			results[index] = await syncOne(sources[index], now, hosted);
+		}
 	}
+
+	await Promise.all(
+		Array.from({ length: Math.min(SYNC_CONCURRENCY, sources.length) }, () => worker())
+	);
 	return results;
 }
 
@@ -53,9 +70,43 @@ export async function syncEnabledSources(): Promise<SyncResult[]> {
 	}
 }
 
+/** Load the published nightly snapshot into the hosted preview's temporary database. */
+async function loadJobsSnapshot(): Promise<SyncResult[]> {
+	const snapshot = await fetchJobsSnapshot();
+	const now = Date.now();
+	const generatedAt = Date.parse(snapshot.generatedAt);
+	if (generatedAt > now || now - generatedAt >= HOSTED_SNAPSHOT_MAX_AGE_MS) {
+		throw new Error('Jobs snapshot is outside the freshness window.');
+	}
+	const published = new Map(
+		snapshot.sources.map((entry) => [`${entry.provider}:${entry.boardToken}`, entry])
+	);
+	return listSources()
+		.filter((source) => source.enabled)
+		.flatMap((source): SyncResult[] => {
+			const entry = published.get(`${source.provider}:${source.boardToken}`);
+			if (!entry) return [];
+			if (entry.error) {
+				recordSourceFailure(source.id, entry.error);
+				return [{ source: source.name, count: 0, error: entry.error }];
+			}
+			const count = upsertSourceJobs(source, freshRemoteJobs(entry.jobs, now));
+			return [{ source: source.name, count, error: null }];
+		});
+}
+
 export async function ensureHostedJobs(): Promise<void> {
 	if (!isHostedDemo() || hasRecentActiveRemoteJobs()) return;
 	const now = Date.now();
 	if (hasRecentSourceSync(listSources(), now)) return;
+	hostedSnapshotInFlight ??= loadJobsSnapshot().finally(() => {
+		hostedSnapshotInFlight = null;
+	});
+	try {
+		await hostedSnapshotInFlight;
+		return;
+	} catch {
+		// An unavailable, invalid, or expired snapshot makes the preview fetch every source itself.
+	}
 	await syncEnabledSources();
 }

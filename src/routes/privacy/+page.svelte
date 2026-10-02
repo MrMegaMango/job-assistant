@@ -10,7 +10,7 @@
 	<div>
 		<p class="eyebrow">Privacy policy</p>
 		<h1>Private by default, personalized by choice.</h1>
-		<p class="lede">Last updated September 3, 2026</p>
+		<p class="lede">Last updated September 27, 2026</p>
 	</div>
 </section>
 
@@ -44,6 +44,17 @@
 		<p>
 			Names, phone numbers, resumes, application answers, generated application packets, and application
 			history remain local to the user's own installation and are not stored in the hosted account.
+		</p>
+	</section>
+
+	<section>
+		<h2>Live company discovery</h2>
+		<p>
+			When you run a discovery search, your editable role or topic and country are sent to Startup Jobs
+			and Himalayas. Public company names from funding reports are also used to look for openings.
+			These services receive the search terms and our server’s connection information. Contact details,
+			resumes, application answers, and your complete matching profile are not sent. Fit scores are
+			computed on our server, and searches are not saved as shared search history.
 		</p>
 	</section>
 

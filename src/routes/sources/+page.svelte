@@ -19,6 +19,12 @@
 </section>
 
 <section class="panel" style="margin-top: 1rem">
+	<h2>Explore companies with $300K+ compensation</h2>
+	<p>Browse Levels.fyi salary evidence and openings across all job families, including companies beyond the connected feeds.</p>
+	<a href="/companies">Browse the company directory</a>
+</section>
+
+<section class="panel" style="margin-top: 1rem">
 	<h2>Manual flexible-work discovery</h2>
 	<p>
 		FlexJobs does not provide a public read feed, so it is linked rather than scraped. Treat listings as
@@ -55,6 +61,8 @@
 						researchedAt={data.leadershipResearchedAt}
 						context={data.surnameContext}
 					/>
+				{:else}
+					<p class="hint" style="margin: 0.75rem 0 0">Leadership details have not been researched.</p>
 				{/if}
 			</div>
 			{#if data.hostedDemo}

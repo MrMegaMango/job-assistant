@@ -21,7 +21,9 @@
 		"prepare": "node scripts/harden-vercel-adapter.mjs && svelte-kit sync",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"test": "vitest run",
-		"ci": "npm run check && npm test && npm run build"
+		"ci": "npm run check && npm test && npm run build",
+		"sweep": "zsh scripts/nightly-sweep.sh --force",
+		"sweep:install": "zsh scripts/install-sweep.sh"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "6.3.4",
