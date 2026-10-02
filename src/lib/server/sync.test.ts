@@ -35,6 +35,7 @@ const source: JobSource = {
 
 const SYNC_NOW = new Date('2026-09-21T12:00:00-07:00').getTime();
 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
+const THIRTY_SIX_HOURS = 36 * 60 * 60 * 1000;
 const freshJob: NormalizedJob = {
 	externalId: 'fresh',
 	company: 'Example',
@@ -235,7 +236,7 @@ describe('hosted cold start', () => {
 		expect(mocks.fetchSource).not.toHaveBeenCalled();
 	});
 
-	it('syncs sources itself only when the snapshot is unavailable', async () => {
+	it('syncs sources itself when the snapshot is unavailable', async () => {
 		mocks.fetchJobsSnapshot.mockRejectedValue(new Error('Source returned HTTP 404.'));
 		mocks.fetchSource.mockResolvedValue([freshJob]);
 		const { ensureHostedJobs } = await import('./sync');
@@ -244,6 +245,93 @@ describe('hosted cold start', () => {
 
 		expect(mocks.fetchSource).toHaveBeenCalledWith(source);
 		expect(mocks.upsertSourceJobs).toHaveBeenCalledWith(source, [freshJob]);
+	});
+
+	it('recovers from an expired snapshot before its old jobs can mark the source freshly synced', async () => {
+		const sixDaysAgo = new Date(SYNC_NOW - 6 * 24 * 60 * 60 * 1000).toISOString();
+		mocks.fetchJobsSnapshot.mockResolvedValue({
+			...snapshot({ jobs: [{ ...freshJob, postedAt: sixDaysAgo }] }),
+			generatedAt: sixDaysAgo
+		});
+		mocks.fetchSource.mockImplementation(async () => {
+			expect(mocks.upsertSourceJobs).not.toHaveBeenCalled();
+			expect(mocks.recordSourceFailure).not.toHaveBeenCalled();
+			return [freshJob];
+		});
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+
+		expect(mocks.fetchSource).toHaveBeenCalledWith(source);
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledExactlyOnceWith(source, [freshJob]);
+	});
+
+	it('accepts a snapshot just under the scheduler\'s 36-hour forced refresh age', async () => {
+		mocks.fetchJobsSnapshot.mockResolvedValue({
+			...snapshot(),
+			generatedAt: new Date(SYNC_NOW - THIRTY_SIX_HOURS + 1).toISOString()
+		});
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+
+		expect(mocks.fetchSource).not.toHaveBeenCalled();
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledWith(source, mixedJobs().slice(0, 2));
+	});
+
+	it.each([
+		['exactly 36 hours old', SYNC_NOW - THIRTY_SIX_HOURS],
+		['over 36 hours old', SYNC_NOW - THIRTY_SIX_HOURS - 1],
+		['from the future', SYNC_NOW + 1]
+	])('fetches live sources when the snapshot is %s', async (_label, generatedAt) => {
+		mocks.fetchJobsSnapshot.mockResolvedValue({
+			...snapshot({ error: 'Old source failure', jobs: [] }),
+			generatedAt: new Date(generatedAt).toISOString()
+		});
+		mocks.fetchSource.mockResolvedValue([freshJob]);
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+
+		expect(mocks.recordSourceFailure).not.toHaveBeenCalled();
+		expect(mocks.fetchSource).toHaveBeenCalledWith(source);
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledExactlyOnceWith(source, [freshJob]);
+	});
+
+	it('keeps a fresh empty snapshot valid and backs off before checking it again', async () => {
+		mocks.fetchJobsSnapshot.mockResolvedValue(snapshot({ jobs: [] }));
+		mocks.upsertSourceJobs.mockImplementation(() => {
+			mocks.listSources.mockReturnValue([{ ...source, lastSyncedAt: new Date(SYNC_NOW).toISOString() }]);
+			return 0;
+		});
+		const { ensureHostedJobs } = await import('./sync');
+
+		await ensureHostedJobs();
+		await ensureHostedJobs();
+
+		expect(mocks.fetchJobsSnapshot).toHaveBeenCalledTimes(1);
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledExactlyOnceWith(source, []);
+		expect(mocks.fetchSource).not.toHaveBeenCalled();
+	});
+
+	it('shares the live fallback for concurrent requests and backs off after an empty refresh', async () => {
+		mocks.fetchJobsSnapshot.mockResolvedValue({
+			...snapshot(),
+			generatedAt: new Date(SYNC_NOW - THIRTY_SIX_HOURS).toISOString()
+		});
+		mocks.fetchSource.mockResolvedValue([]);
+		mocks.upsertSourceJobs.mockImplementation(() => {
+			mocks.listSources.mockReturnValue([{ ...source, lastSyncedAt: new Date(SYNC_NOW).toISOString() }]);
+			return 0;
+		});
+		const { ensureHostedJobs } = await import('./sync');
+
+		await Promise.all([ensureHostedJobs(), ensureHostedJobs()]);
+		await ensureHostedJobs();
+
+		expect(mocks.fetchJobsSnapshot).toHaveBeenCalledTimes(1);
+		expect(mocks.fetchSource).toHaveBeenCalledExactlyOnceWith(source);
+		expect(mocks.upsertSourceJobs).toHaveBeenCalledExactlyOnceWith(source, []);
 	});
 
 	it('shares one snapshot load across concurrent cold requests', async () => {

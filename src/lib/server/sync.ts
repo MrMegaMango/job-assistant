@@ -13,6 +13,8 @@ export interface SyncResult {
 
 const SYNC_CONCURRENCY = 12;
 const HOSTED_EMPTY_REFRESH_BACKOFF_MS = 30 * 60 * 1000;
+// Match the local scheduler's forced refresh age before relying on live employer feeds.
+const HOSTED_SNAPSHOT_MAX_AGE_MS = 36 * 60 * 60 * 1000;
 let hostedSyncInFlight: Promise<SyncResult[]> | null = null;
 let hostedSnapshotInFlight: Promise<SyncResult[]> | null = null;
 
@@ -72,6 +74,10 @@ export async function syncEnabledSources(): Promise<SyncResult[]> {
 async function loadJobsSnapshot(): Promise<SyncResult[]> {
 	const snapshot = await fetchJobsSnapshot();
 	const now = Date.now();
+	const generatedAt = Date.parse(snapshot.generatedAt);
+	if (generatedAt > now || now - generatedAt >= HOSTED_SNAPSHOT_MAX_AGE_MS) {
+		throw new Error('Jobs snapshot is outside the freshness window.');
+	}
 	const published = new Map(
 		snapshot.sources.map((entry) => [`${entry.provider}:${entry.boardToken}`, entry])
 	);
@@ -100,7 +106,7 @@ export async function ensureHostedJobs(): Promise<void> {
 		await hostedSnapshotInFlight;
 		return;
 	} catch {
-		// Only an unavailable or invalid snapshot makes the preview fetch every source itself.
+		// An unavailable, invalid, or expired snapshot makes the preview fetch every source itself.
 	}
 	await syncEnabledSources();
 }
